@@ -5,6 +5,7 @@ import type {
   ManagerBranchStats,
   CategoryAnalytics,
   WeeklyActivityItem,
+  ClerkOrderDetail,
 } from '../../../../types';
 
 interface DashboardFilters {
@@ -20,9 +21,11 @@ export function useManagerBranchDashboard(branchId: string | null) {
     const currentDate = new Date();
     return `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
   });
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [days] = useState<number>(30);
 
-  const [selectedYear] = selectedMonth.split('-');
+  // Extract year and month from selectedMonth (format: "YYYY-MM")
+  const [selectedYear, selectedMonthOnly] = selectedMonth.split('-');
 
   // Fetch dashboard stats
   const {
@@ -57,14 +60,27 @@ export function useManagerBranchDashboard(branchId: string | null) {
     error: weeklyError,
     refetch: refetchWeekly,
   } = useQuery({
-    queryKey: ['managerBranch', 'weeklyActivity', branchId, selectedMonth, selectedYear],
-    queryFn: () => apiService.getManagerBranchWeeklyActivity(branchId!, selectedMonth, selectedYear),
-    enabled: !!branchId && !!selectedMonth && !!selectedYear,
+    queryKey: ['managerBranch', 'weeklyActivity', branchId, selectedMonthOnly, selectedYear],
+    queryFn: () => apiService.getManagerBranchWeeklyActivity(branchId!, selectedMonthOnly, selectedYear),
+    enabled: !!branchId && !!selectedMonthOnly && !!selectedYear,
     staleTime: 60000,
   });
 
-  const isLoading = statsLoading || categoryLoading || weeklyLoading;
-  const hasError = statsError || categoryError || weeklyError;
+  // Fetch orders by date
+  const {
+    data: ordersByDate,
+    isLoading: ordersByDateLoading,
+    error: ordersByDateError,
+    refetch: refetchOrdersByDate,
+  } = useQuery({
+    queryKey: ['managerBranch', 'ordersByDate', branchId, selectedDate],
+    queryFn: () => apiService.getClerkOrdersByDate(selectedDate!, branchId!),
+    enabled: !!branchId && !!selectedDate,
+    staleTime: 30000,
+  });
+
+  const isLoading = statsLoading || categoryLoading || weeklyLoading || ordersByDateLoading;
+  const hasError = statsError || categoryError || weeklyError || ordersByDateError;
 
   // Process weekly activity for calendar
   const weeklyActivityMap = useMemo<Map<string, number>>(() => {
@@ -111,6 +127,8 @@ export function useManagerBranchDashboard(branchId: string | null) {
     setFilters,
     selectedMonth,
     setSelectedMonth,
+    selectedDate,
+    setSelectedDate,
     days,
     // Data
     stats: stats || {
@@ -131,6 +149,7 @@ export function useManagerBranchDashboard(branchId: string | null) {
     categoryAnalytics: categoryAnalytics || [],
     weeklyActivity: weeklyActivity || [],
     weeklyActivityMap,
+    ordersByDate: ordersByDate || [],
     // Calendar
     calendarDates,
     calendarMonthHeader,
@@ -142,10 +161,14 @@ export function useManagerBranchDashboard(branchId: string | null) {
     refetchStats,
     refetchCategory,
     refetchWeekly,
+    refetchOrdersByDate,
     refetchAll: () => {
       refetchStats();
       refetchCategory();
       refetchWeekly();
+      if (selectedDate) {
+        refetchOrdersByDate();
+      }
     },
   };
 }

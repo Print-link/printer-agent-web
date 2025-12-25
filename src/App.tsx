@@ -9,6 +9,8 @@ import { useAuthStore } from './stores/authStore';
 import { OfflineBanner } from './shared/components/OfflineBanner';
 import { ToastContainer } from './components/shared/toast/ToastContainer';
 import LoginPage from './pages/auth/LoginPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import SetupPasswordPage from './pages/auth/SetupPasswordPage';
 import BusinessInfoPage from './pages/auth/BusinessInfoPage';
 import SetupLocationPage from './pages/auth/SetupLocationPage';
@@ -105,6 +107,8 @@ function App() {
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route
                   path="/setup-password"
                   element={

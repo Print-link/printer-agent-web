@@ -29,157 +29,172 @@ interface AuthActions {
 }
 
 export const useAuthStore = create<AuthState & AuthActions>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
+	persist(
+		(set, get) => ({
+			user: null,
+			token: null,
+			isAuthenticated: false,
+			isLoading: false,
+			error: null,
 
-      login: async (credentials) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response: AuthResponse & { requiresLocation?: boolean; requiresPasswordSetup?: boolean } = await apiService.login(
-            credentials.email,
-            credentials.password,
-            credentials.role
-          );
-          
-          // Check if password setup is required (for clerks with temporary password)
-          if (response.user?.isTemporaryPassword === true) {
-            // Clerk has temporary password - store user data temporarily but DON'T authenticate
-            set({
-              user: response.user,
-              token: response.token,
-              isAuthenticated: false, // Not authenticated yet - password setup required
-              isLoading: false,
-            });
-            // Don't throw error - navigation will happen in LoginPage
-            return;
-          }
+			login: async (credentials) => {
+				set({ isLoading: true, error: null });
+				try {
+					const response: AuthResponse & {
+						requiresLocation?: boolean;
+						requiresPasswordSetup?: boolean;
+					} = await apiService.login(
+						credentials.email,
+						credentials.password,
+						credentials.role
+					);
 
-          // User is authenticated (no location/business setup required)
-          set({
-            user: response.user,
-            token: response.token,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-        } catch (error: unknown) {
-          const errorMessage = error instanceof Error 
-            ? error.message 
-            : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Login failed';
-          set({
-            error: errorMessage,
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
+					// Check if password setup is required (for clerks with temporary password)
+					if (response.user?.isTemporaryPassword === true) {
+						// Clerk has temporary password - store user data temporarily but DON'T authenticate
+						set({
+							user: response.user,
+							token: response.token,
+							isAuthenticated: false, // Not authenticated yet - password setup required
+							isLoading: false,
+						});
+						// Don't throw error - navigation will happen in LoginPage
+						return;
+					}
 
-      logout: async () => {
-        const { token } = get();
-        if (token) {
-          try {
-            await apiService.logout();
-          } catch {
-            // Silent error handling
-          }
-        }
-        
-        // Clear React Query cache
-        try {
-          queryClient.clear();
-        } catch {
-          // Silent error handling
-        }
+					// User is authenticated (no location/business setup required)
+					set({
+						user: response.user,
+						token: response.token,
+						isAuthenticated: true,
+						isLoading: false,
+					});
+				} catch (error: unknown) {
+					const errorMessage =
+						error instanceof Error
+							? error.message
+							: (error as { response?: { data?: { message?: string } } })
+									?.response?.data?.message || "Login failed";
+					set({
+						error: errorMessage,
+						isLoading: false,
+					});
+					throw error;
+				}
+			},
 
-        // Clear all localStorage as fallback
-        try {
-          if (typeof window !== 'undefined' && window.localStorage) {
-            window.localStorage.clear();
-          }
-        } catch {
-          // Silent error handling
-        }
-        
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          error: null,
-        });
-      },
+			logout: async () => {
+				const { token } = get();
+				if (token) {
+					try {
+						await apiService.logout();
+					} catch {
+						// Silent error handling
+					}
+				}
 
-      refreshToken: async () => {
-        const { token } = get();
-        if (!token) return;
-        
-        try {
-          const newTokenResponse = await apiService.refreshToken();
-          set({ token: newTokenResponse.token });
-        } catch {
-          // Token refresh failed, logout
-          get().logout();
-        }
-      },
+				// Clear React Query cache
+				try {
+					queryClient.clear();
+				} catch {
+					// Silent error handling
+				}
 
-      clearError: () => set({ error: null }),
+				// Set state to null first (this will trigger Zustand to persist null values)
+				set({
+					user: null,
+					token: null,
+					isAuthenticated: false,
+					error: null,
+				});
 
-      updateUserLocation: async () => {
-        // Location belongs to branches, not users
-        // This method should not be used for user updates
-        throw new Error('Location updates should be done through branch management, not user profile');
-      },
+				// Clear ALL localStorage data after state update
+				// This ensures we remove auth-storage, appSettings, theme, auth-token, and any other stored data
+				try {
+					if (typeof window !== "undefined" && window.localStorage) {
+						window.localStorage.clear();
+					}
+				} catch (error) {
+					console.error("Error clearing localStorage:", error);
+				}
+			},
 
-      updateUserProfile: async (updates) => {
-        try {
-          const { user } = get();
-          if (!user) throw new Error('User not found');
-          
-          // Users only have basic profile fields: firstName, lastName, name, email, phoneNumber, avatar
-          const updatePayload: {
-            firstName?: string;
-            lastName?: string;
-            name?: string;
-            email?: string;
-            phoneNumber?: string;
-            avatar?: string;
-          } = {};
-          
-          if (updates.firstName !== undefined) updatePayload.firstName = updates.firstName;
-          if (updates.lastName !== undefined) updatePayload.lastName = updates.lastName;
-          if (updates.name !== undefined) updatePayload.name = updates.name;
-          if (updates.email !== undefined) updatePayload.email = updates.email;
-          if (updates.phoneNumber !== undefined) updatePayload.phoneNumber = updates.phoneNumber;
-          if (updates.avatar !== undefined) updatePayload.avatar = updates.avatar;
-          
-          // Update user profile via API using /auth/profile endpoint
-          // The API service will handle transformation to unified User format
-          const updatedUser = await apiService.updateProfile(updatePayload);
-          
-          // Update local user state and authenticate
-          set({
-            user: updatedUser,
-            isAuthenticated: true,
-          });
-        } catch (error: unknown) {
-          const errorMessage = error instanceof Error 
-            ? error.message 
-            : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to update profile';
-          set({ error: errorMessage });
-          throw error;
-        }
-      },
-    }),
-    {
-      name: 'auth-storage',
-      partialize: (state) => ({
-        token: state.token,
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
-    }
-  )
+			refreshToken: async () => {
+				const { token } = get();
+				if (!token) return;
+
+				try {
+					const newTokenResponse = await apiService.refreshToken();
+					set({ token: newTokenResponse.token });
+				} catch {
+					// Token refresh failed, logout
+					get().logout();
+				}
+			},
+
+			clearError: () => set({ error: null }),
+
+			updateUserLocation: async () => {
+				// Location belongs to branches, not users
+				// This method should not be used for user updates
+				throw new Error(
+					"Location updates should be done through branch management, not user profile"
+				);
+			},
+
+			updateUserProfile: async (updates) => {
+				try {
+					const { user } = get();
+					if (!user) throw new Error("User not found");
+
+					// Users only have basic profile fields: firstName, lastName, name, email, phoneNumber, avatar
+					const updatePayload: {
+						firstName?: string;
+						lastName?: string;
+						name?: string;
+						email?: string;
+						phoneNumber?: string;
+						avatar?: string;
+					} = {};
+
+					if (updates.firstName !== undefined)
+						updatePayload.firstName = updates.firstName;
+					if (updates.lastName !== undefined)
+						updatePayload.lastName = updates.lastName;
+					if (updates.name !== undefined) updatePayload.name = updates.name;
+					if (updates.email !== undefined) updatePayload.email = updates.email;
+					if (updates.phoneNumber !== undefined)
+						updatePayload.phoneNumber = updates.phoneNumber;
+					if (updates.avatar !== undefined)
+						updatePayload.avatar = updates.avatar;
+
+					// Update user profile via API using /auth/profile endpoint
+					// The API service will handle transformation to unified User format
+					const updatedUser = await apiService.updateProfile(updatePayload);
+
+					// Update local user state and authenticate
+					set({
+						user: updatedUser,
+						isAuthenticated: true,
+					});
+				} catch (error: unknown) {
+					const errorMessage =
+						error instanceof Error
+							? error.message
+							: (error as { response?: { data?: { message?: string } } })
+									?.response?.data?.message || "Failed to update profile";
+					set({ error: errorMessage });
+					throw error;
+				}
+			},
+		}),
+		{
+			name: "auth-storage",
+			partialize: (state) => ({
+				token: state.token,
+				user: state.user,
+				isAuthenticated: state.isAuthenticated,
+			}),
+		}
+	)
 );

@@ -20,9 +20,11 @@ export function useManagerOverviewDashboard() {
     const currentDate = new Date();
     return `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
   });
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [days] = useState<number>(30);
 
-  const [selectedYear] = selectedMonth.split('-');
+  // Extract year and month from selectedMonth (format: "YYYY-MM")
+  const [selectedYear, selectedMonthOnly] = selectedMonth.split('-');
 
   // Fetch dashboard stats
   const {
@@ -55,9 +57,9 @@ export function useManagerOverviewDashboard() {
     error: weeklyError,
     refetch: refetchWeekly,
   } = useQuery({
-    queryKey: ['managerOverview', 'weeklyActivity', selectedMonth, selectedYear],
-    queryFn: () => apiService.getManagerOverviewWeeklyActivity(selectedMonth, selectedYear),
-    enabled: !!selectedMonth && !!selectedYear,
+    queryKey: ['managerOverview', 'weeklyActivity', selectedMonthOnly, selectedYear],
+    queryFn: () => apiService.getManagerOverviewWeeklyActivity(selectedMonthOnly, selectedYear),
+    enabled: !!selectedMonthOnly && !!selectedYear,
     staleTime: 60000,
   });
 
@@ -109,6 +111,8 @@ export function useManagerOverviewDashboard() {
     setFilters,
     selectedMonth,
     setSelectedMonth,
+    selectedDate,
+    setSelectedDate,
     days,
     // Data
     stats: stats || {
@@ -129,6 +133,7 @@ export function useManagerOverviewDashboard() {
     categoryAnalytics: categoryAnalytics || [],
     weeklyActivity: weeklyActivity || [],
     weeklyActivityMap,
+    ordersByDate: [], // Overview doesn't have orders by date (no specific branch)
     // Calendar
     calendarDates,
     calendarMonthHeader,
@@ -140,6 +145,7 @@ export function useManagerOverviewDashboard() {
     refetchStats,
     refetchCategory,
     refetchWeekly,
+    refetchOrdersByDate: () => {}, // No-op for overview
     refetchAll: () => {
       refetchStats();
       refetchCategory();
