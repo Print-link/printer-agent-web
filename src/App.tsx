@@ -4,8 +4,10 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { ToastProvider } from './contexts/ToastContext';
 import { useAuthStore } from './stores/authStore';
 import { OfflineBanner } from './shared/components/OfflineBanner';
+import { ToastContainer } from './components/shared/toast/ToastContainer';
 import LoginPage from './pages/auth/LoginPage';
 import SetupPasswordPage from './pages/auth/SetupPasswordPage';
 import BusinessInfoPage from './pages/auth/BusinessInfoPage';
@@ -96,8 +98,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <SettingsProvider>
-          <OfflineBanner />
-          <Router>
+          <ToastProvider>
+            <OfflineBanner />
+            <ToastContainer />
+            <Router>
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
@@ -149,6 +153,7 @@ function App() {
             </Suspense>
           </Router>
           <ReactQueryDevtools initialIsOpen={false} />
+          </ToastProvider>
         </SettingsProvider>
       </ThemeProvider>
     </QueryClientProvider>

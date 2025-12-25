@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/authStore';
 import { useBranchStore } from '../../stores/branchStore';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import { apiService } from '../../services/api';
 import { Users, Plus, Edit, Trash2, X, Key } from 'lucide-react';
 
@@ -10,6 +11,7 @@ export default function UserManagementPage() {
   const { user } = useAuthStore();
   const { selectedBranch } = useBranchStore();
   const { theme } = useTheme();
+  const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingClerk, setEditingClerk] = useState<any>(null);
@@ -50,6 +52,13 @@ export default function UserManagementPage() {
       queryClient.invalidateQueries({ queryKey: ['clerks'] });
       setShowCreateForm(false);
       setFormData({ firstName: '', lastName: '', email: '', password: '', phoneNumber: '' });
+      success('Clerk account created successfully', 'User Created', 4000);
+    },
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to create clerk account';
+      showError(errorMessage, 'Creation Failed', 5000);
     },
   });
 
@@ -57,6 +66,13 @@ export default function UserManagementPage() {
     mutationFn: (clerkId: string) => apiService.deleteUser(clerkId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clerks'] });
+      success('Clerk account deleted successfully', 'User Deleted', 4000);
+    },
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to delete clerk account';
+      showError(errorMessage, 'Deletion Failed', 5000);
     },
   });
 
@@ -67,7 +83,13 @@ export default function UserManagementPage() {
       setShowPasswordModal(false);
       setSelectedClerkId(null);
       setNewPassword('');
-      alert('Password changed successfully!');
+      success('Password changed successfully', 'Password Updated', 4000);
+    },
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to change password';
+      showError(errorMessage, 'Update Failed', 5000);
     },
   });
 
@@ -84,7 +106,7 @@ export default function UserManagementPage() {
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim() || !formData.password.trim()) {
-      alert('Please fill in all required fields');
+      showError('Please fill in all required fields', 'Validation Error', 4000);
       return;
     }
     createClerkMutation.mutate(formData);

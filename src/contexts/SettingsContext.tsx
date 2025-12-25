@@ -100,6 +100,7 @@ function applyCSSVariables(settings: Settings) {
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [settings, setSettings] = useState<Settings>(() => {
     const saved = localStorage.getItem('appSettings');
     if (saved) {
@@ -124,6 +125,28 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     applyCSSVariables(defaultSettings);
     return defaultSettings;
   });
+
+  // Track user interaction to enable audio playback
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      setHasUserInteracted(true);
+      // Remove listeners after first interaction
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+
+    // Add event listeners for user interaction
+    document.addEventListener('click', handleUserInteraction, { once: true });
+    document.addEventListener('keydown', handleUserInteraction, { once: true });
+    document.addEventListener('touchstart', handleUserInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('appSettings', JSON.stringify(settings));
@@ -172,13 +195,37 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const playSound = useCallback((soundType: 'job' | 'payment') => {
     if (!settings.sounds.enabled) return;
+    
+    // Only play sound if user has interacted with the page
+    // This prevents browser autoplay policy violations
+    if (!hasUserInteracted) {
+      return;
+    }
 
     const soundFile = soundType === 'job' ? jobSound : paymentSound;
 
-    const audio = new Audio(soundFile);
-    audio.volume = settings.sounds.volume;
-    audio.play().catch(err => console.error('Error playing sound:', err));
-  }, [settings.sounds.enabled, settings.sounds.volume]);
+    try {
+      const audio = new Audio(soundFile);
+      audio.volume = settings.sounds.volume;
+      // Set preload to allow playing after user interaction
+      audio.preload = 'auto';
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          // Silently handle autoplay errors - they're expected before user interaction
+          if (err.name !== 'NotAllowedError') {
+            console.error('Error playing sound:', err);
+          }
+        });
+      }
+    } catch (err) {
+      // Silently handle errors - they're expected before user interaction
+      if (err instanceof Error && err.name !== 'NotAllowedError') {
+        console.error('Error playing sound:', err);
+      }
+    }
+  }, [settings.sounds.enabled, settings.sounds.volume, hasUserInteracted]);
 
   const resetSettings = useCallback(() => {
     setSettings(defaultSettings);

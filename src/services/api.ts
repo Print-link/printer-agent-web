@@ -271,15 +271,36 @@ class ApiService {
 
   // Printer Agents
   async getAgents(): Promise<PrinterAgent[]> {
-    
-    const response = await this.axiosInstance.get('/print/agents');
-    return response.data.data;
+    try {
+      const response = await this.axiosInstance.get('/print/agents');
+      return response.data.data || [];
+    } catch (error) {
+      // Handle 404 or other errors gracefully - return empty array if endpoint doesn't exist
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 404) {
+          console.warn('Print agents endpoint not available (404)');
+          return [];
+        }
+      }
+      throw error;
+    }
   }
 
   async getAgent(id: string): Promise<PrinterAgent> {
-    
-    const response = await this.axiosInstance.get(`/print/agents/${id}`);
-    return response.data.data;
+    try {
+      const response = await this.axiosInstance.get(`/print/agents/${id}`);
+      return response.data.data;
+    } catch (error) {
+      // Handle 404 gracefully
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 404) {
+          throw new Error('Agent not found');
+        }
+      }
+      throw error;
+    }
   }
 
   async updateAgentStatus(id: string, status: PrinterAgent['status']): Promise<PrinterAgent> {

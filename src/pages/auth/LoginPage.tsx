@@ -2,12 +2,14 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useToast } from '../../contexts/ToastContext';
 import type { UserRole } from '../../types';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, error, isLoading } = useAuthStore();
   const { theme } = useTheme();
+  const { success, error: showError } = useToast();
   const [userRole, setUserRole] = useState<UserRole>('manager');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,6 +20,13 @@ export default function LoginPage() {
       await login({ email, password, role: userRole });
 
       const { isAuthenticated, user } = useAuthStore.getState();
+
+      // Show success toast
+      success(
+        `Welcome back, ${user?.firstName || user?.name || 'User'}!`,
+        'Login Successful',
+        3000
+      );
 
       if (user?.isTemporaryPassword === true) {
         navigate('/setup-password');
@@ -35,7 +44,9 @@ export default function LoginPage() {
 
       navigate('/');
     } catch (err) {
-      // Error is handled by store
+      // Show error toast
+      const errorMessage = error || (err instanceof Error ? err.message : 'Login failed');
+      showError(errorMessage, 'Login Failed', 5000);
     }
   };
 
@@ -125,16 +136,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className={`p-3 rounded-md text-sm text-center ${
-                theme === 'dark' 
-                  ? 'bg-red-900/30 text-red-400 border border-red-800' 
-                  : 'bg-red-50 text-red-600 border border-red-200'
-              }`}>
-                {error}
-              </div>
-            )}
 
             {/* Submit Button */}
             <button

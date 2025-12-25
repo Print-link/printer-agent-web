@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../../stores/authStore';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useToast } from '../../../contexts/ToastContext';
 import { apiService } from '../../../services/api';
 import { ArrowLeft, CheckCircle, X } from 'lucide-react';
 import type { IBranch } from '../../../types';
@@ -18,6 +19,7 @@ export default function BranchCreatePage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { theme } = useTheme();
+  const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -83,7 +85,14 @@ export default function BranchCreatePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['branches'] });
+      success('Branch created successfully', 'Branch Created', 4000);
       navigate('/clerk/branches');
+    },
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to create branch';
+      showError(errorMessage, 'Creation Failed', 5000);
     },
   });
 
