@@ -313,6 +313,37 @@ export interface ServiceTemplate {
   updatedAt?: Date | string;
 }
 
+// Flexible Pricing Configuration Types
+export type BaseConfigurationType = 'PRESET' | 'CUSTOM';
+
+export interface BaseConfiguration {
+  id: string;
+  name: string;
+  type: BaseConfigurationType;
+  unitPrice: number;
+  customValue?: string | null;
+}
+
+export interface PricingOption {
+  id: string;
+  name: string;
+  enabled: boolean;
+  default: boolean;
+  priceModifier: number;
+}
+
+export interface CustomSpecification {
+  id: string;
+  name: string;
+  priceModifier: number;
+}
+
+export interface PricingConfig {
+  baseConfigurations: BaseConfiguration[];
+  options: PricingOption[];
+  customSpecifications: CustomSpecification[];
+}
+
 export interface AgentService {
   id: string;
   branchId: string;
@@ -325,6 +356,7 @@ export interface AgentService {
   supportsColor: boolean;
   supportsFrontBack: boolean;
   supportsFrontOnly: boolean;
+  pricingConfig?: PricingConfig | null; // New flexible pricing configuration
   createdAt?: Date | string;
   updatedAt?: Date | string;
   // Populated fields (from joins)

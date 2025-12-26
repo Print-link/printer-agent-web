@@ -1,35 +1,36 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 import type {
-  User,
-  AuthResponse,
-  ClerkOrdersResponse,
-  ClerkOrdersFilters,
-  ClerkOrderDetail,
-  ClerkDashboardStats,
-  ClerkCategoryAnalytics,
-  ClerkWeeklyActivity,
-  ManagerOverviewStats,
-  ManagerBranchStats,
-  CategoryAnalytics,
-  WeeklyActivityItem,
-  Branch,
-  BranchCategoryBreakdown,
-  PrintJob,
-  PrinterAgent,
-  AnalyticsData,
-  PrinterLog,
-  ClerkOrder,
-  OrderStatus,
-  Category,
-  CategoryType,
-  RegularFormatProperties,
-  ServiceCategory,
-  ServiceSubCategory,
-  ServiceTemplate,
-  AgentService,
-  CreateAgentServiceData,
-  UpdateAgentServiceData,
-} from '../types';
+	User,
+	AuthResponse,
+	ClerkOrdersResponse,
+	ClerkOrdersFilters,
+	ClerkOrderDetail,
+	ClerkDashboardStats,
+	ClerkCategoryAnalytics,
+	ClerkWeeklyActivity,
+	ManagerOverviewStats,
+	ManagerBranchStats,
+	CategoryAnalytics,
+	WeeklyActivityItem,
+	Branch,
+	BranchCategoryBreakdown,
+	PrintJob,
+	PrinterAgent,
+	AnalyticsData,
+	PrinterLog,
+	ClerkOrder,
+	OrderStatus,
+	Category,
+	CategoryType,
+	RegularFormatProperties,
+	ServiceCategory,
+	ServiceSubCategory,
+	ServiceTemplate,
+	AgentService,
+	CreateAgentServiceData,
+	UpdateAgentServiceData,
+	PricingConfig,
+} from "../types";
 
 const API_BASE_URL =
 	import.meta.env.VITE_API_BASE_URL ||
@@ -693,7 +694,9 @@ class ApiService {
 
 	// Branch APIs
 	async getAllBranches(managerId: string): Promise<Branch[]> {
-		const response = await this.axiosInstance.get(`/branches/manager/${managerId}`);
+		const response = await this.axiosInstance.get(
+			`/branches/manager/${managerId}`
+		);
 		return response.data.data;
 	}
 
@@ -709,31 +712,34 @@ class ApiService {
 		// If we have a file, send as FormData (required by backend multer middleware)
 		if (coverImageFile) {
 			const formData = new FormData();
-			
+
 			// Add file
 			formData.append("branchCoverImage", coverImageFile);
-			
+
 			// Add branch data fields
 			formData.append("name", branchData.name);
 			formData.append("manager_id", branchData.manager_id);
 			formData.append("status", branchData.status);
 			formData.append("isMainBranch", String(branchData.isMainBranch));
-			
+
 			if (branchData.phoneNumber) {
 				formData.append("phoneNumber", branchData.phoneNumber);
 			}
 			if (branchData.branchEmailAddress) {
 				formData.append("branchEmailAddress", branchData.branchEmailAddress);
 			}
-			
+
 			// Stringify operatingHours (backend expects string or object)
-			formData.append("operatingHours", JSON.stringify(branchData.operatingHours));
-			
+			formData.append(
+				"operatingHours",
+				JSON.stringify(branchData.operatingHours)
+			);
+
 			// Add location_id if provided (location will be created separately)
 			if (branchData.location_id) {
 				formData.append("location_id", branchData.location_id);
 			}
-			
+
 			const response = await this.axiosInstance.post("/branches", formData, {
 				headers: {
 					"Content-Type": "multipart/form-data",
@@ -741,7 +747,7 @@ class ApiService {
 			});
 			return response.data.data;
 		}
-		
+
 		// Fallback to JSON if no file (though backend requires file)
 		const response = await this.axiosInstance.post("/branches", branchData);
 		return response.data.data;
@@ -1041,8 +1047,36 @@ class ApiService {
 	async createAgentService(
 		data: CreateAgentServiceData
 	): Promise<AgentService> {
-		const response = await this.axiosInstance.post("/agent-services", data);
-		return response.data.data || response.data;
+		// Validate required fields before sending
+		if (!data.branchId || !data.branchId.trim()) {
+			throw new Error("Branch ID is required");
+		}
+		if (!data.serviceTemplateId || !data.serviceTemplateId.trim()) {
+			throw new Error("Service template ID is required");
+		}
+
+		try {
+			const response = await this.axiosInstance.post("/agent-services", data);
+			if (!response.data.success && response.data.message) {
+				throw new Error(response.data.message);
+			}
+			return response.data.data || response.data;
+		} catch (error: unknown) {
+			if (axios.isAxiosError(error)) {
+				const errorMessage =
+					error.response?.data?.message ||
+					error.message ||
+					"Failed to create agent service";
+				console.error("Error creating agent service:", {
+					status: error.response?.status,
+					message: errorMessage,
+					responseData: error.response?.data,
+					requestData: data,
+				});
+				throw new Error(errorMessage);
+			}
+			throw error;
+		}
 	}
 
 	async updateAgentService(
@@ -1058,6 +1092,17 @@ class ApiService {
 
 	async deleteAgentService(agentServiceId: string): Promise<void> {
 		await this.axiosInstance.delete(`/agent-services/${agentServiceId}`);
+	}
+
+	async updateAgentServicePricingConfig(
+		agentServiceId: string,
+		pricingConfig: PricingConfig
+	): Promise<AgentService> {
+		const response = await this.axiosInstance.put(
+			`/agent-services/${agentServiceId}/pricing-config`,
+			{ pricingConfig }
+		);
+		return response.data.data || response.data;
 	}
 }
 
