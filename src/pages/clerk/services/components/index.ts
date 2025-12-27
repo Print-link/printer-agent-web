@@ -3,5 +3,5 @@ export { SubCategoriesView } from './SubCategoriesView';
 export { ServiceTemplatesView } from './ServiceTemplatesView';
 export { AgentServicesView } from './AgentServicesView';
 export { AgentServiceForm } from './AgentServiceForm';
-export { PricingConfigForm } from "./PricingConfigForm";
+export { PricingConfigForm } from "./pricing-config";
 

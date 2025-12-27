@@ -42,20 +42,20 @@ export function Toast({ toast, onClose }: ToastProps) {
 		switch (toast.type) {
 			case 'success':
 				return theme === 'dark'
-					? `${baseStyles} bg-green-900/20 border-green-800/50 text-green-100`
-					: `${baseStyles} bg-green-50 border-green-200 text-green-800`;
+					? `${baseStyles} bg-green-900/90 border-green-700 text-green-100`
+					: `${baseStyles} bg-green-100 border-green-300 text-green-900`;
 			case 'error':
 				return theme === 'dark'
-					? `${baseStyles} bg-red-900/20 border-red-800/50 text-red-100`
-					: `${baseStyles} bg-red-50 border-red-200 text-red-800`;
+					? `${baseStyles} bg-red-900/90 border-red-700 text-red-100`
+					: `${baseStyles} bg-red-100 border-red-300 text-red-900`;
 			case 'warning':
 				return theme === 'dark'
-					? `${baseStyles} bg-yellow-900/20 border-yellow-800/50 text-yellow-100`
-					: `${baseStyles} bg-yellow-50 border-yellow-200 text-yellow-800`;
+					? `${baseStyles} bg-yellow-900/90 border-yellow-700 text-yellow-100`
+					: `${baseStyles} bg-yellow-100 border-yellow-300 text-yellow-900`;
 			case 'info':
 				return theme === 'dark'
-					? `${baseStyles} bg-blue-900/20 border-blue-800/50 text-blue-100`
-					: `${baseStyles} bg-blue-50 border-blue-200 text-blue-800`;
+					? `${baseStyles} bg-blue-900/90 border-blue-700 text-blue-100`
+					: `${baseStyles} bg-blue-100 border-blue-300 text-blue-900`;
 			default:
 				return theme === 'dark'
 					? `${baseStyles} bg-gray-800 border-gray-700 text-gray-100`
