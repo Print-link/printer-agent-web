@@ -870,7 +870,7 @@ class ApiService {
 
 	async updateBranchOrder(
 		orderId: string,
-		order: Partial<ClerkOrder>
+		order: Partial<ClerkOrder> & { estimatedCompletionTime?: string }
 	): Promise<ClerkOrderDetail> {
 		// Backend route: PUT /orders/:id
 		const response = await this.axiosInstance.put(`/orders/${orderId}`, order);
@@ -882,7 +882,7 @@ class ApiService {
 
 	async updateClerkOrder(
 		orderId: string,
-		order: Partial<ClerkOrder>
+		order: Partial<ClerkOrder> & { estimatedCompletionTime?: string }
 	): Promise<ClerkOrderDetail> {
 		return this.updateBranchOrder(orderId, order);
 	}

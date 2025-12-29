@@ -11,6 +11,8 @@ export function getStatusColor(status: string, theme: 'dark' | 'light' = 'light'
 			return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
 		case 'PAID':
 			return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+		case 'RECEIVED':
+			return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400';
 		case 'IN_PROGRESS':
 			return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400';
 		default:

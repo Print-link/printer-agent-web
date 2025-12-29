@@ -83,10 +83,10 @@ export default function OrdersPage() {
 	return (
 		<div className="flex flex-col h-full overflow-hidden">
 			{/* Header */}
-			<div className="flex-shrink-0 mb-4">
-				<div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+			<div className="flex-shrink-0 mb-2">
+				<div className="flex items-center justify-between mb-2 flex-wrap gap-2">
 					<h2
-						className={`text-xl sm:text-2xl font-bold ${
+						className={`text-lg sm:text-xl font-bold ${
 							theme === "dark" ? "text-gray-100" : "text-gray-900"
 						}`}
 					>
@@ -105,7 +105,7 @@ export default function OrdersPage() {
 				</div>
 
 				{/* Filters */}
-				<div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+				<div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
 					<div className="relative flex-1">
 						<Search
 							className={`absolute left-3 top-1/2 -translate-y-1/2 ${

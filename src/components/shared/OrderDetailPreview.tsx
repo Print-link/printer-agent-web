@@ -69,6 +69,7 @@ export default function OrderDetailPreview({
 		enabled: !!order.id,
 	});
 
+	// Mutation for updating to COMPLETED status
 	const updateOrderMutation = useMutation({
 		mutationFn: (status: "COMPLETED") => {
 			return apiService.updateBranchOrder(order.id, { status });
@@ -101,6 +102,41 @@ export default function OrderDetailPreview({
 		},
 	});
 
+	// Mutation for updating to RECEIVED status with estimated completion time
+	const markAsReceivedMutation = useMutation({
+		mutationFn: (estimatedCompletionTime: Date) => {
+			return apiService.updateBranchOrder(order.id, {
+				status: "RECEIVED",
+				estimatedCompletionTime: estimatedCompletionTime.toISOString(),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ["orderDetail", order.id, branchId],
+			});
+			queryClient.invalidateQueries({ queryKey: ["branchOrders", branchId] });
+			// Refresh the page data
+			queryClient.refetchQueries({ queryKey: ["branchOrders", branchId] });
+			queryClient.refetchQueries({
+				queryKey: ["orderDetail", order.id, branchId],
+			});
+			// Show success toast
+			success(
+				`Order ${order.orderNumber} has been marked as received`,
+				"Order Received",
+				4000
+			);
+			if (onOrderUpdate) onOrderUpdate();
+		},
+		onError: (error: unknown) => {
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Failed to mark order as received";
+			showError(errorMessage, "Update Failed", 5000);
+		},
+	});
+
 	const handleMarkAsCompleted = () => {
 		if (order.status === "COMPLETED") {
 			return;
@@ -110,6 +146,10 @@ export default function OrderDetailPreview({
 
 	const confirmMarkAsCompleted = () => {
 		updateOrderMutation.mutate("COMPLETED");
+	};
+
+	const handleMarkAsReceived = (estimatedTime: Date) => {
+		markAsReceivedMutation.mutate(estimatedTime);
 	};
 
 	const handleDownloadFile = async (fileUrl: string, fileName: string) => {
@@ -151,9 +191,10 @@ export default function OrderDetailPreview({
 				) : (
 					<>
 						<OrderInfoCard
-							order={order}
-							isUpdating={updateOrderMutation.isPending}
+							order={orderDetail || order}
+							isUpdating={updateOrderMutation.isPending || markAsReceivedMutation.isPending}
 							onMarkAsComplete={handleMarkAsCompleted}
+							onMarkAsReceived={handleMarkAsReceived}
 						/>
 
 						<ClientInfoCard client={order.client} />

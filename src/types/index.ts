@@ -39,7 +39,7 @@ export interface AuthResponse {
 }
 
 // Order Types
-export type OrderStatus = 'PENDING' | 'QUOTED' | 'PAID' | 'IN_PROGRESS' | 'COMPLETED';
+export type OrderStatus = 'PENDING' | 'QUOTED' | 'PAID' | 'RECEIVED' | 'IN_PROGRESS' | 'COMPLETED';
 
 export interface ClerkOrderClient {
   id: string;
@@ -63,7 +63,17 @@ export interface ClerkOrderItemOptions {
   frontBack: boolean;
   color: boolean;
   printCut: boolean;
+  frontOnly?: boolean;
   files: ClerkOrderFile[];
+  selectedBaseConfigId?: string;
+  selectedOptions?: string[];
+  selectedCustomSpecs?: string[];
+}
+
+export interface SelectedConfigDetails {
+  baseConfig?: { id: string; name: string };
+  options?: Array<{ id: string; name: string; priceModifier?: number }>;
+  customSpecs?: Array<{ id: string; name: string; priceModifier?: number }>;
 }
 
 export interface ClerkOrderItemCategory {
@@ -89,6 +99,7 @@ export interface ClerkOrderItem {
   measurementUnit: string;
   quantity: number;
   options: ClerkOrderItemOptions;
+  selectedConfigDetails?: SelectedConfigDetails;
   calculatedPrice: number;
   createdAt: string | Date;
 }
@@ -100,6 +111,7 @@ export interface ClerkOrder {
   totalPrice: number;
   client: ClerkOrderClient;
   itemCount: number;
+  estimatedCompletionTime?: string | Date;
   createdAt: string | Date;
   updatedAt: string | Date;
 }
