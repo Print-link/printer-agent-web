@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PricingOption } from '../../../../../types';
+import type { PricingOption } from "../../../../../../types";
 
 interface AddOptionDialogProps {
   isOpen: boolean;

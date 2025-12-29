@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../../../stores/authStore';
 import { apiService } from '../../../../services/api';
-import type { ClerkDashboardStats, ClerkCategoryAnalytics, ClerkWeeklyActivity, ClerkOrderDetail } from '../../../../types';
+import type { ClerkWeeklyActivity } from "../../../../types";
 
 export function useClerkDashboard() {
   const { user } = useAuthStore();

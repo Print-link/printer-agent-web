@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { CustomSpecification } from '../../../../../types';
+import type { CustomSpecification } from '../../../../../../types';
 
 interface AddCustomSpecDialogProps {
   isOpen: boolean;

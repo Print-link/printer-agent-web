@@ -1,7 +1,7 @@
 /**
  * Get status color classes based on order status
  */
-export function getStatusColor(status: string, theme: 'dark' | 'light' = 'light'): string {
+export function getStatusColor(status: string): string {
 	switch (status) {
 		case 'COMPLETED':
 			return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';

@@ -1,4 +1,4 @@
-import type { AgentService, PricingConfig } from '../../../../../types';
+import type { AgentService, PricingConfig } from '../../../../../../types';
 
 export function getDefaultPricingConfig(agentService: AgentService): PricingConfig {
   const isBondPaper =

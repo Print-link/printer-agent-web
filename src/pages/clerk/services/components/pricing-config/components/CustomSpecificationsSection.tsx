@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { CustomSpecCard } from './CustomSpecCard';
-import type { CustomSpecification } from '../../../../../types';
+import type { CustomSpecification } from "../../../../../../types";
 
 interface CustomSpecificationsSectionProps {
   customSpecifications: CustomSpecification[];

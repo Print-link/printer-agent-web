@@ -24,7 +24,6 @@ const OverviewPage = lazy(() => import('./pages/clerk/OverviewPage'));
 const ProfilePage = lazy(() => import('./pages/clerk/ProfilePage'));
 const SettingsPage = lazy(() => import('./pages/clerk/SettingsPage'));
 const UserManagementPage = lazy(() => import('./pages/clerk/UserManagementPage'));
-const StatusPage = lazy(() => import('./pages/clerk/StatusPage'));
 const ServicesPage = lazy(() => import('./pages/clerk/ServicesPage'));
 const BranchCreatePage = lazy(() => import('./pages/clerk/branches/BranchCreatePage'));
 

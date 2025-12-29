@@ -26,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => {
     { path: '/clerk/upload', label: 'Upload Files', icon: FileText },
   ];
 
-  const navItems = user?.role === 'admin' ? adminNavItems : clerkNavItems;
+  const navItems = (user?.role === 'manager' || user?.role === 'clerk') ? clerkNavItems : adminNavItems;
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">

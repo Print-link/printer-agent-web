@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { OptionCard } from './OptionCard';
-import type { PricingOption } from '../../../../../types';
+import type { PricingOption } from "../../../../../../types";
 
 interface OptionsSectionProps {
   options: PricingOption[];

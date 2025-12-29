@@ -290,6 +290,7 @@ class MockApiService {
 		start: string;
 		end: string;
 	}): Promise<AnalyticsData> {
+		console.log("getAnalytics", dateRange);
 		await this.delay();
 		return mockAnalytics;
 	}
@@ -356,6 +357,7 @@ class MockApiService {
 		currentPassword: string,
 		newPassword: string
 	): Promise<void> {
+		console.log("changePassword", currentPassword, newPassword);
 		await this.delay();
 		// Mock implementation
 	}
@@ -371,7 +373,13 @@ class MockApiService {
 	}
 
 	// User management methods
-	async getAllUsers(params?: any): Promise<{
+	async getAllUsers(params?: {
+		page?: number;
+		limit?: number;
+		role?: string;
+		isActive?: boolean;
+		search?: string;
+	}): Promise<{
 		users: User[];
 		pagination: {
 			current: number;
@@ -380,6 +388,7 @@ class MockApiService {
 			limit: number;
 		};
 	}> {
+		console.log("getAllUsers", params);
 		await this.delay();
 		return {
 			users: mockUsers,
@@ -399,7 +408,9 @@ class MockApiService {
 		return user;
 	}
 
-	async createUser(userData: any): Promise<User> {
+	async createUser(
+		userData: Omit<User, "id" | "createdAt" | "updatedAt">
+	): Promise<User> {
 		await this.delay();
 		const newUser: User = {
 			id: Date.now().toString(),
@@ -413,7 +424,7 @@ class MockApiService {
 		return newUser;
 	}
 
-	async updateUser(id: string, updates: any): Promise<User> {
+	async updateUser(id: string, updates: Partial<User>): Promise<User> {
 		await this.delay();
 		const userIndex = mockUsers.findIndex((u) => u.id === id);
 		if (userIndex === -1) throw new Error("User not found");
@@ -430,6 +441,7 @@ class MockApiService {
 	}
 
 	async resetUserPassword(id: string, newPassword: string): Promise<void> {
+		console.log("resetUserPassword", id, newPassword);
 		await this.delay();
 		// Mock implementation
 	}
@@ -461,6 +473,7 @@ class MockApiService {
 	): Promise<{
 		modifiedCount: number;
 	}> {
+		console.log("bulkUpdateUserRoles", userIds, role);
 		await this.delay();
 		return { modifiedCount: userIds.length };
 	}

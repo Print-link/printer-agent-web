@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import jobSound from '../assets/sounds/public_job_beeps_reverb_large_area_high_pitched_65401.mp3';
 import paymentSound from '../assets/sounds/payment_job_bell_ring_clapper_movement_x5_89158.mp3';
 

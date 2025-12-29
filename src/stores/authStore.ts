@@ -13,19 +13,26 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
-  refreshToken: () => Promise<void>;
-  clearError: () => void;
-  updateUserLocation: () => Promise<void>;
-  updateUserProfile: (updates: {
-    firstName?: string;
-    lastName?: string;
-    name?: string;
-    email?: string;
-    phoneNumber?: string;
-    avatar?: string;
-  }) => Promise<void>;
+	login: (credentials: LoginCredentials) => Promise<void>;
+	logout: () => void;
+	refreshToken: () => Promise<void>;
+	clearError: () => void;
+	updateUserLocation: (location: {
+		latitude: number;
+		longitude: number;
+		address: string;
+	}) => Promise<void>;
+	updateUserProfile: (updates: {
+		businessName?: string;
+		businessPhone?: string;
+		websiteUrl?: string;
+		firstName?: string;
+		lastName?: string;
+		name?: string;
+		email?: string;
+		phoneNumber?: string;
+		avatar?: string;
+	}) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState & AuthActions>()(
@@ -134,12 +141,16 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
 			clearError: () => set({ error: null }),
 
-			updateUserLocation: async () => {
-				// Location belongs to branches, not users
-				// This method should not be used for user updates
-				throw new Error(
-					"Location updates should be done through branch management, not user profile"
-				);
+			updateUserLocation: async (location: {
+				latitude: number;
+				longitude: number;
+				address: string;
+			}) => {
+				const { user } = get();
+				if (!user) throw new Error("User not found");
+
+				const updatedUser = await apiService.updateLocation(user.id, location);
+				set({ user: updatedUser as User });
 			},
 
 			updateUserProfile: async (updates) => {

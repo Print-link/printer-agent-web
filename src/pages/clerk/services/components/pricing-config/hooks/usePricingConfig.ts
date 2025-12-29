@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import type { AgentService, PricingConfig, BaseConfiguration, PricingOption, CustomSpecification } from '../../../../../types';
+import type {
+	AgentService,
+	PricingConfig,
+	BaseConfiguration,
+	PricingOption,
+	CustomSpecification,
+} from "../../../../../../types";
 import { getDefaultPricingConfig } from '../utils/pricingConfigDefaults';
 
 export function usePricingConfig(agentService: AgentService | null, isOpen: boolean) {

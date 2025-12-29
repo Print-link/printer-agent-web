@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PrintJob, PrinterAgent, PrinterLog } from '../types';
+import type { PrintJob, PrinterAgent, PrinterLog } from "../types";
 
 interface PrinterState {
   jobs: PrintJob[];

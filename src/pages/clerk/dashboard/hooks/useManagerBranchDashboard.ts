@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../../../../services/api';
-import type {
-  ManagerBranchStats,
-  CategoryAnalytics,
-  WeeklyActivityItem,
-  ClerkOrderDetail,
-} from '../../../../types';
+import type { WeeklyActivityItem } from "../../../../types";
 
 interface DashboardFilters {
   startDate?: string;

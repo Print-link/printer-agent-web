@@ -27,7 +27,12 @@ export function OrderItemCard({
 			parsedOptions = JSON.parse(item.options);
 		} catch (e) {
 			console.error('Error parsing options:', e);
-			parsedOptions = {};
+			parsedOptions = {
+			frontBack: false,
+			color: false,
+			printCut: false,
+			files: [],
+		};
 		}
 	}
 

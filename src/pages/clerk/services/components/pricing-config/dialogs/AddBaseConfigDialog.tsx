@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { BaseConfiguration } from '../../../../../types';
+import type { BaseConfiguration } from "../../../../../../types";
 
 interface AddBaseConfigDialogProps {
   isOpen: boolean;

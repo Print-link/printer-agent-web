@@ -1,5 +1,5 @@
 import { Eye } from 'lucide-react';
-import type { PricingConfig } from '../../../../../types';
+import type { PricingConfig } from "../../../../../../types";
 
 interface ConfigurationPreviewProps {
   pricingConfig: PricingConfig;

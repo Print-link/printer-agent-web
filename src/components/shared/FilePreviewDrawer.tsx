@@ -41,7 +41,12 @@ export function FilePreviewDrawer({
         parsedOptions = JSON.parse(item.options);
       } catch (e) {
         console.error('Error parsing options:', e);
-        parsedOptions = {};
+        parsedOptions = {
+          frontBack: false,
+          color: false,
+          printCut: false,
+          files: [],
+        };
       }
     }
     
@@ -79,7 +84,7 @@ export function FilePreviewDrawer({
   const handleDownload = async () => {
     if (!currentFile) return;
     try {
-      const fileUrl = currentFile.url || currentFile.fileUrl || currentFile.secure_url || '';
+      const fileUrl = currentFile.url || '';
       const fileName = currentFile.name || currentFile.publicId?.split('/').pop() || 'file';
       
       const response = await fetch(fileUrl);
@@ -138,13 +143,13 @@ export function FilePreviewDrawer({
     if (!currentFile) return 'file';
     const baseName = currentFile.name || currentFile.publicId?.split('/').pop() || 'file';
     // If format is pdf but filename doesn't have .pdf extension, add it
-    if (currentFile.format === 'pdf' && !baseName.toLowerCase().endsWith('.pdf')) {
+    if (currentFile.type === 'application/pdf' && !baseName.toLowerCase().endsWith('.pdf')) {
       return `${baseName}.pdf`;
     }
     return baseName;
   }, [currentFile]);
 
-  const fileUrl = currentFile?.url || currentFile?.fileUrl || currentFile?.secure_url || '';
+  const fileUrl = currentFile?.url || '';
 
   return (
     <>
@@ -238,7 +243,7 @@ export function FilePreviewDrawer({
         <div className="flex-1 overflow-hidden flex flex-col relative">
           {currentFile && fileUrl ? (
             <div className={`flex-1 overflow-auto ${
-              currentFile.format === 'pdf' ? 'p-0' : 'p-4'
+              currentFile.type === 'application/pdf' ? 'p-0' : 'p-4'
             } flex flex-col`}>
               <FilePreview fileUrl={fileUrl} fileName={fileName} />
             </div>

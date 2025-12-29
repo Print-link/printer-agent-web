@@ -90,8 +90,7 @@ export function OrderInfoCard({ order, isUpdating, onMarkAsComplete, onMarkAsRec
 				</div>
 				<span
 					className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-						order.status,
-						theme
+						order.status
 					)}`}
 				>
 					{order.status}

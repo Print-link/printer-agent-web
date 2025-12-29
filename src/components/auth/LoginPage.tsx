@@ -7,7 +7,6 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   
-  const { login } = useAuthStore();
   const loginMutation = useLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -17,7 +16,8 @@ const LoginPage: React.FC = () => {
     try {
       const { user, token } = await loginMutation.mutateAsync({ email, password });
       localStorage.setItem('auth-token', token);
-      login(user);
+      // Set user and token in store directly
+      useAuthStore.setState({ user, token, isAuthenticated: true });
     } catch (err: unknown) {
       setError((err as Error).message || 'Login failed');
     }
