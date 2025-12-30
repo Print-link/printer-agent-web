@@ -81,21 +81,56 @@ export function FilePreview({ fileName, fileUrl }: FilePreviewProps) {
   }
 
   if (fileType === 'pdf' && fileUrl) {
-    // Use fileUrl directly in iframe - no fetching needed
-    const pdfUrl = `${fileUrl}#toolbar=1&navpanes=0&scrollbar=1`;
+    // Force HTTPS for production compatibility
+    const secureUrl = fileUrl.startsWith('http://') 
+      ? fileUrl.replace('http://', 'https://') 
+      : fileUrl.startsWith('//') 
+        ? `https:${fileUrl}` 
+        : fileUrl;
+
+    // Use Google Docs Viewer for more robust production rendering
+    const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(secureUrl)}&embedded=true`;
 
     return (
       <div
-        className={`p-4 rounded-xl h-full min-h-[600px] overflow-hidden relative select-none ${
-          theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+        className={`p-0 rounded-xl h-full min-h-[600px] overflow-hidden relative select-none flex flex-col ${
+          theme === "dark" ? "bg-gray-800" : "bg-white"
         }`}
         onContextMenu={(e) => e.preventDefault()}
       >
-        <iframe
-          src={pdfUrl}
-          className="w-full h-full border-none rounded-lg"
-          title={fileName}
-        />
+        <div className="flex-1 relative">
+          <iframe
+            src={googleViewerUrl}
+            className="w-full h-full border-none rounded-t-lg"
+            title={fileName}
+          />
+        </div>
+        <div className={`p-3 border-t flex justify-center gap-4 ${
+          theme === 'dark' ? 'border-gray-700 bg-gray-900/50' : 'border-gray-200 bg-gray-50'
+        }`}>
+          <button
+            onClick={handleDownload}
+            className={`px-4 py-2 rounded-lg font-semibold text-xs flex items-center gap-2 transition-transform hover:scale-105 ${
+              theme === 'dark'
+                ? 'bg-amber-500 hover:bg-amber-600 text-black'
+                : 'bg-amber-400 hover:bg-amber-500 text-black'
+            }`}
+          >
+            ⬇️ Download
+          </button>
+          <a
+            href={secureUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`px-4 py-2 rounded-lg font-semibold text-xs flex items-center gap-2 transition-transform hover:scale-105 border ${
+              theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            🔗 Open Original
+          </a>
+        </div>
       </div>
     );
   }
