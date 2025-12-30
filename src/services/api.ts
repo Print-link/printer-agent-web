@@ -34,7 +34,7 @@ import type {
 
 const API_BASE_URL =
 	import.meta.env.VITE_API_BASE_URL ||
-	"https://paper-link-backend-production.up.railway.app/api";
+	"http://localhost:3000/api";
 
 class ApiService {
 	private axiosInstance: AxiosInstance;
