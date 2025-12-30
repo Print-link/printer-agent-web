@@ -9,46 +9,30 @@ interface PricingConfigHeaderProps {
 
 export function PricingConfigHeader({ agentService, theme, onClose }: PricingConfigHeaderProps) {
   return (
-    <div className="flex justify-between items-start mb-6">
+    <div
+      className={`flex justify-between items-center p-3 border-b ${
+        theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'
+      } rounded-t-xl`}
+    >
       <div>
         <h2
-          className={`text-2xl font-bold mb-2 ${
+          className={`text-xl font-bold ${
             theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
           }`}
         >
-          Configure Flexible Pricing
+          {agentService.serviceTemplate?.name || 'Configure Service'}
         </h2>
-        <div
-          className={`text-sm space-y-1 ${
-            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-          }`}
-        >
-          <p>
-            <strong>Service:</strong> {agentService.serviceTemplate?.name || 'Unknown'}
-          </p>
-          {agentService.category && (
-            <p>
-              <strong>Category:</strong> {agentService.category.name} →{' '}
-              {agentService.subCategory?.name}
-            </p>
-          )}
-          {!agentService.pricingConfig && (
-            <p
-              className={`text-xs mt-2 px-3 py-1.5 rounded-md ${
-                theme === 'dark'
-                  ? 'bg-blue-900/30 text-blue-300 border border-blue-700'
-                  : 'bg-blue-50 text-blue-700 border border-blue-200'
-              }`}
-            >
-              <strong>New Service:</strong> Configure pricing to activate this service
-            </p>
-          )}
-        </div>
+        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+          Step-by-step pricing configuration
+        </p>
       </div>
+
       <button
         onClick={onClose}
-        className={`p-2 rounded-md border-none bg-transparent cursor-pointer flex items-center justify-center ${
-          theme === 'dark' ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+        className={`p-2 rounded-lg border transition-colors ${
+          theme === 'dark'
+            ? 'border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+            : 'border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
         }`}
       >
         <X size={20} />

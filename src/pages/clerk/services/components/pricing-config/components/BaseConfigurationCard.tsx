@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import type { BaseConfiguration } from '../../../../../../types';
 
@@ -19,6 +20,61 @@ export function BaseConfigurationCard({
   onUpdate,
   onDelete,
 }: BaseConfigurationCardProps) {
+  // Local state for inputs to allow smooth editing and "empty" states
+  const [localName, setLocalName] = useState(config.name);
+  const [localPrice, setLocalPrice] = useState<string | number>(config.unitPrice);
+  const [localCustomValue, setLocalCustomValue] = useState(config.customValue || '');
+
+  // Sync from props only when not focused or when config ID changes (to handle external updates)
+  // Note: We're taking a simpler approach of syncing when props change, 
+  // but relying on onBlur to commit changes to avoid the snap-back loop during typing.
+  useEffect(() => {
+    setLocalName(config.name);
+  }, [config.name]);
+  
+  useEffect(() => {
+    // Only update if the values are actually different to avoid overriding user input "0."
+    if (Number(localPrice) !== config.unitPrice) {
+       setLocalPrice(config.unitPrice);
+    }
+  }, [config.unitPrice]);
+
+  useEffect(() => {
+    setLocalCustomValue(config.customValue || '');
+  }, [config.customValue]);
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '' || value === '-') {
+      setLocalPrice(value);
+    } else {
+      const parsed = parseFloat(value);
+      setLocalPrice(isNaN(parsed) ? value : value);
+    }
+  };
+
+  const commitPrice = () => {
+    const finalPrice = typeof localPrice === 'string' ? parseFloat(localPrice) || 0 : localPrice;
+    if (finalPrice !== config.unitPrice) {
+      onUpdate({ unitPrice: finalPrice });
+    }
+    // Format back to number on blur if valid
+    setLocalPrice(finalPrice);
+  };
+
+  const commitName = () => {
+    if (localName !== config.name) {
+      onUpdate({ name: localName });
+    }
+  };
+
+  const commitCustomValue = () => {
+    const val = localCustomValue.trim() || null;
+    if (val !== config.customValue) {
+      onUpdate({ customValue: val });
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-start gap-3">
@@ -76,8 +132,9 @@ export function BaseConfigurationCard({
             </label>
             <input
               type="text"
-              value={config.name}
-              onChange={(e) => onUpdate({ name: e.target.value })}
+              value={localName}
+              onChange={(e) => setLocalName(e.target.value)}
+              onBlur={commitName}
               className={`w-full p-2 rounded-md border text-sm ${
                 theme === 'dark'
                   ? 'bg-gray-800 border-gray-600 text-gray-100'
@@ -117,8 +174,9 @@ export function BaseConfigurationCard({
             <input
               type="number"
               step="0.01"
-              value={config.unitPrice}
-              onChange={(e) => onUpdate({ unitPrice: parseFloat(e.target.value) || 0 })}
+              value={localPrice}
+              onChange={handlePriceChange}
+              onBlur={commitPrice}
               className={`w-full p-2 rounded-md border text-sm ${
                 theme === 'dark'
                   ? 'bg-gray-800 border-gray-600 text-gray-100'
@@ -137,8 +195,9 @@ export function BaseConfigurationCard({
               </label>
               <input
                 type="text"
-                value={config.customValue || ''}
-                onChange={(e) => onUpdate({ customValue: e.target.value.trim() || null })}
+                value={localCustomValue}
+                onChange={(e) => setLocalCustomValue(e.target.value)}
+                onBlur={commitCustomValue}
                 className={`w-full p-2 rounded-md border text-sm ${
                   theme === 'dark'
                     ? 'bg-gray-800 border-gray-600 text-gray-100'

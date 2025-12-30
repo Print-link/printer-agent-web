@@ -12,7 +12,7 @@ export function AddOptionDialog({ isOpen, onClose, onAdd, theme }: AddOptionDial
   const [name, setName] = useState('');
   const [enabled, setEnabled] = useState(true);
   const [isDefault, setIsDefault] = useState(false);
-  const [priceModifier, setPriceModifier] = useState(0);
+  const [priceModifier, setPriceModifier] = useState<number | string>(0);
 
   if (!isOpen) return null;
 
@@ -25,7 +25,7 @@ export function AddOptionDialog({ isOpen, onClose, onAdd, theme }: AddOptionDial
       name: name.trim(),
       enabled,
       default: isDefault,
-      priceModifier,
+      priceModifier: typeof priceModifier === 'string' ? parseFloat(priceModifier) || 0 : priceModifier,
     });
 
     // Reset form
@@ -34,6 +34,15 @@ export function AddOptionDialog({ isOpen, onClose, onAdd, theme }: AddOptionDial
     setIsDefault(false);
     setPriceModifier(0);
     onClose();
+  };
+
+  const handlePriceChange = (value: string) => {
+    if (value === '' || value === '-') {
+      setPriceModifier(value);
+      return;
+    }
+    const parsed = parseFloat(value);
+    setPriceModifier(isNaN(parsed) ? value : value);
   };
 
   return (
@@ -118,7 +127,7 @@ export function AddOptionDialog({ isOpen, onClose, onAdd, theme }: AddOptionDial
               type="number"
               step="0.01"
               value={priceModifier}
-              onChange={(e) => setPriceModifier(parseFloat(e.target.value) || 0)}
+              onChange={(e) => handlePriceChange(e.target.value)}
               className={`w-full p-2 rounded-md border text-sm ${
                 theme === 'dark'
                   ? 'bg-gray-700 border-gray-600 text-gray-100'

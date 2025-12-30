@@ -23,7 +23,7 @@ export function BaseConfigurationsSection({
 }: BaseConfigurationsSectionProps) {
   return (
     <section>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-2">
         <h3
           className={`text-lg font-semibold ${
             theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
@@ -45,13 +45,13 @@ export function BaseConfigurationsSection({
         </button>
       </div>
       <p
-        className={`text-sm mb-4 ${
+        className={`text-sm mb-2 ${
           theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
         }`}
       >
         Check the configurations you want to enable. Edit details when checked.
       </p>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {baseConfigurations.map((config, index) => (
           <div
             key={config.id}

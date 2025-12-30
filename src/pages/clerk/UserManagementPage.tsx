@@ -135,6 +135,7 @@ export default function UserManagementPage() {
 			...formData,
 			branch_id: selectedBranch?.id || "",
 		});
+
 		setShowCreateForm(false);
 		setFormData({
 			firstName: "",
@@ -143,6 +144,8 @@ export default function UserManagementPage() {
 			password: "",
 			phoneNumber: "",
 		});
+		success("Clerk created successfully", "User Created", 4000);
+		queryClient.invalidateQueries({ queryKey: ["clerks"] });
 	};
 
 	const handlePasswordChange = (e: React.FormEvent) => {

@@ -11,20 +11,24 @@ interface AddBaseConfigDialogProps {
 export function AddBaseConfigDialog({ isOpen, onClose, onAdd, theme }: AddBaseConfigDialogProps) {
   const [name, setName] = useState('');
   const [type, setType] = useState<'PRESET' | 'CUSTOM'>('PRESET');
-  const [unitPrice, setUnitPrice] = useState(0);
+  const [unitPrice, setUnitPrice] = useState<number | string>(0);
   const [customValue, setCustomValue] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || unitPrice < 0) return;
+    if (!name.trim()) return;
+    
+    // Ensure unitPrice is a number for validation and submission
+    const finalUnitPrice = typeof unitPrice === 'string' ? parseFloat(unitPrice) || 0 : unitPrice;
+    if (finalUnitPrice < 0) return;
 
     onAdd({
       id: `config_${Date.now()}`,
       name: name.trim(),
       type,
-      unitPrice,
+      unitPrice: finalUnitPrice,
       customValue: type === 'CUSTOM' ? customValue.trim() || null : null,
     });
 
@@ -34,6 +38,15 @@ export function AddBaseConfigDialog({ isOpen, onClose, onAdd, theme }: AddBaseCo
     setUnitPrice(0);
     setCustomValue('');
     onClose();
+  };
+
+  const handlePriceChange = (value: string) => {
+    if (value === '' || value === '-') {
+      setUnitPrice(value);
+      return;
+    }
+    const parsed = parseFloat(value);
+    setUnitPrice(isNaN(parsed) ? value : value);
   };
 
   return (
@@ -109,7 +122,7 @@ export function AddBaseConfigDialog({ isOpen, onClose, onAdd, theme }: AddBaseCo
               type="number"
               step="0.01"
               value={unitPrice}
-              onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
+              onChange={(e) => handlePriceChange(e.target.value)}
               className={`w-full p-2 rounded-md border text-sm ${
                 theme === 'dark'
                   ? 'bg-gray-700 border-gray-600 text-gray-100'

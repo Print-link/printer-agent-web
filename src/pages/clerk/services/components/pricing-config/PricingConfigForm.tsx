@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { Layers, ListChecks, Settings, Eye } from 'lucide-react';
 import { useTheme } from '../../../../../contexts/ThemeContext';
 import { usePricingConfig } from './hooks/usePricingConfig';
 import { usePricingConfigForm } from './hooks/usePricingConfigForm';
 import { PricingConfigHeader } from './components/PricingConfigHeader';
+import { PricingConfigSidebar } from './components/PricingConfigSidebar';
 import { BaseConfigurationsSection } from './components/BaseConfigurationsSection';
 import { OptionsSection } from './components/OptionsSection';
 import { CustomSpecificationsSection } from './components/CustomSpecificationsSection';
@@ -18,6 +20,33 @@ interface PricingConfigFormProps {
   onSuccess: () => void;
 }
 
+const STEPS = [
+  {
+    id: 1,
+    title: 'Base Configuration',
+    description: 'Setup pricing models',
+    icon: Layers,
+  },
+  {
+    id: 2,
+    title: 'Options & Extras',
+    description: 'Add finishing options',
+    icon: ListChecks,
+  },
+  {
+    id: 3,
+    title: 'Custom Specifications',
+    description: 'Define user inputs',
+    icon: Settings,
+  },
+  {
+    id: 4,
+    title: 'Review & Activate',
+    description: 'Preview and save',
+    icon: Eye,
+  },
+];
+
 export function PricingConfigForm({
   isOpen,
   agentService,
@@ -25,8 +54,8 @@ export function PricingConfigForm({
   onSuccess,
 }: PricingConfigFormProps) {
   const { theme } = useTheme();
-  const [showPreview, setShowPreview] = useState(false);
-
+  const [currentStep, setCurrentStep] = useState(1);
+  
   // Dialog states
   const [showAddBaseConfig, setShowAddBaseConfig] = useState(false);
   const [showAddOption, setShowAddOption] = useState(false);
@@ -52,6 +81,18 @@ export function PricingConfigForm({
   const { isSubmitting, error, handleSave } = usePricingConfigForm(agentService, onSuccess, onClose);
 
   if (!isOpen) return null;
+
+  const handleNext = () => {
+    if (currentStep < STEPS.length) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
 
   const handleToggleBaseConfig = (index: number, checked: boolean) => {
     const newChecked = new Set(checkedBaseConfigs);
@@ -80,68 +121,104 @@ export function PricingConfigForm({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-5"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-5"
         onClick={onClose}
       >
         <div
-          className={`rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-auto shadow-xl ${
-            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          className={`flex flex-col rounded-lg max-w-5xl w-full h-[85vh] shadow-2xl overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-800 ring-1 ring-gray-700' : 'bg-white ring-1 ring-gray-200'
           }`}
           onClick={(e) => e.stopPropagation()}
         >
           <PricingConfigHeader agentService={agentService} theme={theme} onClose={onClose} />
 
-          {error && (
-            <div className="p-3 rounded-lg bg-red-500/20 border border-red-500 text-red-500 text-sm mb-6">
-              {error}
+          <div className="flex flex-1 overflow-hidden">
+            <PricingConfigSidebar
+              currentStep={currentStep}
+              steps={STEPS}
+              theme={theme}
+              onStepClick={setCurrentStep}
+            />
+
+            <div className={`flex-1 overflow-y-auto p-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="max-w-3xl mx-auto">
+                <div className="mb-6">
+
+                  <h3 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    {STEPS[currentStep - 1].title}
+                  </h3>
+                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {STEPS[currentStep - 1].description}
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/50 text-red-500 text-sm mb-6 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    {error}
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  {currentStep === 1 && (
+                    <BaseConfigurationsSection
+                      baseConfigurations={pricingConfig.baseConfigurations || []}
+                      checkedIndices={checkedBaseConfigs}
+                      theme={theme}
+                      onAdd={() => setShowAddBaseConfig(true)}
+                      onToggle={handleToggleBaseConfig}
+                      onUpdate={handleUpdateBaseConfig}
+                      onDelete={removeBaseConfiguration}
+                    />
+                  )}
+
+                  {currentStep === 2 && (
+                    <OptionsSection
+                      options={pricingConfig.options || []}
+                      editingIndex={editingOption}
+                      theme={theme}
+                      onAdd={() => setShowAddOption(true)}
+                      onEdit={setEditingOption}
+                      onUpdate={handleUpdateOption}
+                      onCancelEdit={() => setEditingOption(null)}
+                      onDelete={removeOption}
+                    />
+                  )}
+
+                  {currentStep === 3 && (
+                    <CustomSpecificationsSection
+                      customSpecifications={pricingConfig.customSpecifications || []}
+                      editingIndex={editingCustomSpec}
+                      theme={theme}
+                      onAdd={() => setShowAddCustomSpec(true)}
+                      onEdit={setEditingCustomSpec}
+                      onUpdate={handleUpdateCustomSpec}
+                      onCancelEdit={() => setEditingCustomSpec(null)}
+                      onDelete={removeCustomSpecification}
+                    />
+                  )}
+
+                  {currentStep === 4 && (
+                    <ConfigurationPreview
+                      pricingConfig={pricingConfig}
+                      showPreview={true}
+                      theme={theme}
+                      onToggle={() => {}}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
-          )}
-
-          <div className="space-y-6">
-            <BaseConfigurationsSection
-              baseConfigurations={pricingConfig.baseConfigurations || []}
-              checkedIndices={checkedBaseConfigs}
-              theme={theme}
-              onAdd={() => setShowAddBaseConfig(true)}
-              onToggle={handleToggleBaseConfig}
-              onUpdate={handleUpdateBaseConfig}
-              onDelete={removeBaseConfiguration}
-            />
-
-            <OptionsSection
-              options={pricingConfig.options || []}
-              editingIndex={editingOption}
-              theme={theme}
-              onAdd={() => setShowAddOption(true)}
-              onEdit={setEditingOption}
-              onUpdate={handleUpdateOption}
-              onCancelEdit={() => setEditingOption(null)}
-              onDelete={removeOption}
-            />
-
-            <CustomSpecificationsSection
-              customSpecifications={pricingConfig.customSpecifications || []}
-              editingIndex={editingCustomSpec}
-              theme={theme}
-              onAdd={() => setShowAddCustomSpec(true)}
-              onEdit={setEditingCustomSpec}
-              onUpdate={handleUpdateCustomSpec}
-              onCancelEdit={() => setEditingCustomSpec(null)}
-              onDelete={removeCustomSpecification}
-            />
-
-            <ConfigurationPreview
-              pricingConfig={pricingConfig}
-              showPreview={showPreview}
-              theme={theme}
-              onToggle={() => setShowPreview(!showPreview)}
-            />
           </div>
 
           <PricingConfigActions
             theme={theme}
             isSubmitting={isSubmitting}
+            currentStep={currentStep}
+            totalSteps={STEPS.length}
             onClose={onClose}
+            onNext={handleNext}
+            onBack={handleBack}
             onSaveDraft={() => handleSave(pricingConfig, false)}
             onSaveAndActivate={() => handleSave(pricingConfig, true)}
           />
