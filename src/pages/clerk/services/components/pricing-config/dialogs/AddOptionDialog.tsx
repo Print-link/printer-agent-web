@@ -12,7 +12,7 @@ export function AddOptionDialog({ isOpen, onClose, onAdd, theme }: AddOptionDial
   const [name, setName] = useState('');
   const [enabled, setEnabled] = useState(true);
   const [isDefault, setIsDefault] = useState(false);
-  const [priceModifier, setPriceModifier] = useState<number | string>(0);
+  const [priceModifier, setPriceModifier] = useState<number | string>('');
 
   if (!isOpen) return null;
 
@@ -32,7 +32,7 @@ export function AddOptionDialog({ isOpen, onClose, onAdd, theme }: AddOptionDial
     setName('');
     setEnabled(true);
     setIsDefault(false);
-    setPriceModifier(0);
+    setPriceModifier('');
     onClose();
   };
 

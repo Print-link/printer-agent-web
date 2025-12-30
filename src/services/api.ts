@@ -825,6 +825,7 @@ class ApiService {
 				branchId: string;
 				status: string;
 				totalPrice: number;
+				itemCount: number;
 				createdAt: Date | string;
 				updatedAt: Date | string;
 				client: {
@@ -842,7 +843,7 @@ class ApiService {
 				status: order.status as OrderStatus,
 				totalPrice: order.totalPrice,
 				client: order.client,
-				itemCount: 0, // Will be populated when order detail is fetched
+				itemCount: order.itemCount || 0,
 				createdAt: order.createdAt,
 				updatedAt: order.updatedAt,
 			})

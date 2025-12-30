@@ -11,7 +11,7 @@ interface AddBaseConfigDialogProps {
 export function AddBaseConfigDialog({ isOpen, onClose, onAdd, theme }: AddBaseConfigDialogProps) {
   const [name, setName] = useState('');
   const [type, setType] = useState<'PRESET' | 'CUSTOM'>('PRESET');
-  const [unitPrice, setUnitPrice] = useState<number | string>(0);
+  const [unitPrice, setUnitPrice] = useState<number | string>('');
   const [customValue, setCustomValue] = useState('');
 
   if (!isOpen) return null;
@@ -35,7 +35,7 @@ export function AddBaseConfigDialog({ isOpen, onClose, onAdd, theme }: AddBaseCo
     // Reset form
     setName('');
     setType('PRESET');
-    setUnitPrice(0);
+    setUnitPrice('');
     setCustomValue('');
     onClose();
   };
