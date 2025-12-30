@@ -30,6 +30,8 @@ import type {
 	CreateAgentServiceData,
 	UpdateAgentServiceData,
 	PricingConfig,
+	CreateServiceTemplateData,
+	UpdateServiceTemplateData,
 } from "../types";
 
 const API_BASE_URL =
@@ -1017,10 +1019,37 @@ class ApiService {
 		return response.data.data || response.data;
 	}
 
-	async getServiceTemplates(subCategoryId: string): Promise<ServiceTemplate[]> {
+	async getServiceTemplates(
+		subCategoryId: string,
+		branchId?: string
+	): Promise<ServiceTemplate[]> {
 		const response = await this.axiosInstance.get("/service-templates", {
-			params: { subCategoryId },
+			params: { subCategoryId, branchId },
 		});
+		return response.data.data || response.data;
+	}
+
+	async createServiceTemplate(
+		data: CreateServiceTemplateData
+	): Promise<ServiceTemplate> {
+		const response = await this.axiosInstance.post("/service-templates", data);
+		return response.data.data || response.data;
+	}
+
+	async updateServiceTemplate(
+		id: string,
+		data: UpdateServiceTemplateData
+	): Promise<ServiceTemplate> {
+		const response = await this.axiosInstance.put(`/service-templates/${id}`, data);
+		return response.data.data || response.data;
+	}
+
+	async deleteServiceTemplate(id: string): Promise<void> {
+		await this.axiosInstance.delete(`/service-templates/${id}`);
+	}
+
+	async getPricingFormulas(): Promise<any[]> {
+		const response = await this.axiosInstance.get("/pricing-formulas");
 		return response.data.data || response.data;
 	}
 

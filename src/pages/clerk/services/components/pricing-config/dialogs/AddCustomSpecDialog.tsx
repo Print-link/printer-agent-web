@@ -55,7 +55,7 @@ export function AddCustomSpecDialog({ isOpen, onClose, onAdd, theme }: AddCustom
             theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
           }`}
         >
-          Add Custom Specification
+          Add Extra Add Ons
         </h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

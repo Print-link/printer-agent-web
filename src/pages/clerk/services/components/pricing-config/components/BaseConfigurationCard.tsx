@@ -20,196 +20,78 @@ export function BaseConfigurationCard({
   onUpdate,
   onDelete,
 }: BaseConfigurationCardProps) {
-  // Local state for inputs to allow smooth editing and "empty" states
-  const [localName, setLocalName] = useState(config.name);
   const [localPrice, setLocalPrice] = useState<string | number>(config.unitPrice);
-  const [localCustomValue, setLocalCustomValue] = useState(config.customValue || '');
 
-  // Sync from props only when not focused or when config ID changes (to handle external updates)
-  // Note: We're taking a simpler approach of syncing when props change, 
-  // but relying on onBlur to commit changes to avoid the snap-back loop during typing.
   useEffect(() => {
-    setLocalName(config.name);
-  }, [config.name]);
-  
-  useEffect(() => {
-    // Only update if the values are actually different to avoid overriding user input "0."
     if (Number(localPrice) !== config.unitPrice) {
        setLocalPrice(config.unitPrice);
     }
   }, [config.unitPrice]);
 
-  useEffect(() => {
-    setLocalCustomValue(config.customValue || '');
-  }, [config.customValue]);
-
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === '' || value === '-') {
-      setLocalPrice(value);
-    } else {
-      const parsed = parseFloat(value);
-      setLocalPrice(isNaN(parsed) ? value : value);
-    }
-  };
-
-  const commitPrice = () => {
-    const finalPrice = typeof localPrice === 'string' ? parseFloat(localPrice) || 0 : localPrice;
-    if (finalPrice !== config.unitPrice) {
-      onUpdate({ unitPrice: finalPrice });
-    }
-    // Format back to number on blur if valid
-    setLocalPrice(finalPrice);
-  };
-
-  const commitName = () => {
-    if (localName !== config.name) {
-      onUpdate({ name: localName });
-    }
-  };
-
-  const commitCustomValue = () => {
-    const val = localCustomValue.trim() || null;
-    if (val !== config.customValue) {
-      onUpdate({ customValue: val });
+  const handlePriceChange = (value: string) => {
+    setLocalPrice(value);
+    const parsed = parseFloat(value);
+    if (!isNaN(parsed) && parsed !== config.unitPrice) {
+      onUpdate({ unitPrice: parsed });
     }
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onChange={(e) => onToggle(e.target.checked)}
-          className="mt-1 cursor-pointer"
-        />
-        <div className="flex-1">
-          <label
-            className={`block font-medium cursor-pointer ${
-              theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
-            }`}
-            onClick={() => onToggle(!isChecked)}
-          >
+    <div className={`group flex items-center gap-4 px-4 py-3 rounded-xl border transition-all ${
+      isChecked 
+        ? theme === 'dark' ? 'bg-blue-500/5 border-blue-500/30' : 'bg-blue-50/50 border-blue-200'
+        : theme === 'dark' ? 'bg-transparent border-gray-800 hover:border-gray-700' : 'bg-transparent border-gray-100 hover:border-gray-200'
+    }`}>
+      <input
+        type="checkbox"
+        checked={isChecked}
+        onChange={(e) => onToggle(e.target.checked)}
+        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+      />
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className={`text-sm font-bold truncate ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
             {config.name}
-          </label>
-          {!isChecked && (
-            <p
-              className={`text-sm mt-1 ${
-                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-              }`}
-            >
-              ₵{config.unitPrice.toFixed(2)} per page
-              {config.type === 'CUSTOM' && config.customValue && ` • ${config.customValue}`}
-            </p>
+          </span>
+          {config.type === 'CUSTOM' && (
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              Custom
+            </span>
           )}
         </div>
-        {isChecked && (
-          <button
-            type="button"
-            onClick={onDelete}
-            className={`p-1.5 rounded-md transition-colors ${
-              theme === 'dark'
-                ? 'hover:bg-red-900/30 text-red-400'
-                : 'hover:bg-red-50 text-red-600'
-            }`}
-            title="Delete configuration"
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
       </div>
 
-      {isChecked && (
-        <div className="ml-7 space-y-3 pt-2 border-t border-gray-300 dark:border-gray-600">
-          <div>
-            <label
-              className={`block text-sm font-medium mb-2 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-              }`}
-            >
-              Name
-            </label>
-            <input
-              type="text"
-              value={localName}
-              onChange={(e) => setLocalName(e.target.value)}
-              onBlur={commitName}
-              className={`w-full p-2 rounded-md border text-sm ${
-                theme === 'dark'
-                  ? 'bg-gray-800 border-gray-600 text-gray-100'
-                  : 'bg-white border-gray-300 text-gray-900'
-              } focus:outline-none focus:ring-2 focus:ring-amber-400`}
-            />
-          </div>
-          <div>
-            <label
-              className={`block text-sm font-medium mb-2 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-              }`}
-            >
-              Type
-            </label>
-            <select
-              value={config.type}
-              onChange={(e) => onUpdate({ type: e.target.value as 'PRESET' | 'CUSTOM' })}
-              className={`w-full p-2 rounded-md border text-sm ${
-                theme === 'dark'
-                  ? 'bg-gray-800 border-gray-600 text-gray-100'
-                  : 'bg-white border-gray-300 text-gray-900'
-              } focus:outline-none focus:ring-2 focus:ring-amber-400`}
-            >
-              <option value="PRESET">Preset</option>
-              <option value="CUSTOM">Custom</option>
-            </select>
-          </div>
-          <div>
-            <label
-              className={`block text-sm font-medium mb-2 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-              }`}
-            >
-              Unit Price (₵)
-            </label>
+      <div className="flex items-center gap-3">
+        {isChecked && (
+          <div className="relative flex items-center">
+            <span className="absolute left-2.5 text-[10px] font-bold text-gray-500">₵</span>
             <input
               type="number"
               step="0.01"
               value={localPrice}
-              onChange={handlePriceChange}
-              onBlur={commitPrice}
-              className={`w-full p-2 rounded-md border text-sm ${
+              onChange={(e) => handlePriceChange(e.target.value)}
+              className={`w-20 pl-5 pr-2 py-1.5 rounded-lg border text-xs font-black transition-all ${
                 theme === 'dark'
-                  ? 'bg-gray-800 border-gray-600 text-gray-100'
-                  : 'bg-white border-gray-300 text-gray-900'
-              } focus:outline-none focus:ring-2 focus:ring-amber-400`}
+                  ? 'bg-gray-900 border-gray-800 focus:border-blue-500 text-white'
+                  : 'bg-white border-gray-200 focus:border-blue-500 text-gray-900'
+              } focus:outline-none`}
             />
           </div>
-          {config.type === 'CUSTOM' && (
-            <div>
-              <label
-                className={`block text-sm font-medium mb-2 ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                }`}
-              >
-                Custom Value (Optional)
-              </label>
-              <input
-                type="text"
-                value={localCustomValue}
-                onChange={(e) => setLocalCustomValue(e.target.value)}
-                onBlur={commitCustomValue}
-                className={`w-full p-2 rounded-md border text-sm ${
-                  theme === 'dark'
-                    ? 'bg-gray-800 border-gray-600 text-gray-100'
-                    : 'bg-white border-gray-300 text-gray-900'
-                } focus:outline-none focus:ring-2 focus:ring-amber-400`}
-                placeholder="e.g., 8.5x11"
-              />
-            </div>
-          )}
-        </div>
-      )}
+        )}
+
+        {isChecked && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className={`p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${
+              theme === 'dark' ? 'hover:bg-red-500/10 text-red-400' : 'hover:bg-red-50 text-red-600'
+            }`}
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
-

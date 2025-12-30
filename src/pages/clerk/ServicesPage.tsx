@@ -17,6 +17,7 @@ import {
 	AgentServicesView,
 	AgentServiceForm,
 	PricingConfigForm,
+	ServiceTemplateForm,
 } from "./services/components";
 
 type ViewState =
@@ -56,6 +57,8 @@ export default function ServicesPage() {
 	const [showPricingConfigForm, setShowPricingConfigForm] = useState(false);
 	const [pricingConfigService, setPricingConfigService] =
 		useState<AgentService | null>(null);
+	const [showTemplateForm, setShowTemplateForm] = useState(false);
+	const [editingTemplate, setEditingTemplate] = useState<ServiceTemplate | null>(null);
 
 	const loadCategories = async () => {
 		setIsLoading(true);
@@ -150,10 +153,11 @@ export default function ServicesPage() {
 	};
 
 	const loadServiceTemplates = async (subCategoryId: string) => {
+		if (!selectedBranch?.id) return;
 		setIsLoading(true);
 		setError(null);
 		try {
-			const data = await apiService.getServiceTemplates(subCategoryId);
+			const data = await apiService.getServiceTemplates(subCategoryId, selectedBranch.id);
 			setServiceTemplates(data);
 		} catch (err) {
 			setError(
@@ -305,6 +309,38 @@ export default function ServicesPage() {
 		} catch (err) {
 			alert(err instanceof Error ? err.message : "Failed to delete service");
 		}
+	};
+
+	const handleAddCustomTemplate = () => {
+		setEditingTemplate(null);
+		setShowTemplateForm(true);
+	};
+
+	const handleEditTemplate = (template: ServiceTemplate) => {
+		setEditingTemplate(template);
+		setShowTemplateForm(true);
+	};
+
+	const handleDeleteTemplate = async (template: ServiceTemplate) => {
+		if (!window.confirm(`Are you sure you want to delete "${template.name}"? This will also remove any services using this template.`)) {
+			return;
+		}
+		try {
+			await apiService.deleteServiceTemplate(template.id);
+			success("Template deleted successfully", "Deleted", 3000);
+			if (navState.selectedSubCategory) {
+				loadServiceTemplates(navState.selectedSubCategory.id);
+			}
+		} catch (err) {
+			showError(err instanceof Error ? err.message : "Failed to delete template");
+		}
+	};
+
+	const handleTemplateFormSuccess = () => {
+		if (navState.selectedSubCategory) {
+			loadServiceTemplates(navState.selectedSubCategory.id);
+		}
+		success(editingTemplate ? "Template updated" : "Template created", "Success", 3000);
 	};
 
 	const handleConfigurePricing = (service: AgentService) => {
@@ -460,6 +496,9 @@ export default function ServicesPage() {
 								onBack={handleBack}
 								onViewAgentServices={handleViewAgentServices}
 								isLoading={isLoading}
+								onAddCustomTemplate={handleAddCustomTemplate}
+								onEditTemplate={handleEditTemplate}
+								onDeleteTemplate={handleDeleteTemplate}
 							/>
 						)}
 
@@ -502,6 +541,21 @@ export default function ServicesPage() {
 							setPricingConfigService(null);
 						}}
 						onSuccess={handlePricingConfigSuccess}
+					/>
+				)}
+
+				{/* Custom Template Form Modal */}
+				{showTemplateForm && navState.selectedSubCategory && (
+					<ServiceTemplateForm
+						isOpen={showTemplateForm}
+						branchId={selectedBranch.id}
+						subCategoryId={navState.selectedSubCategory.id}
+						editingTemplate={editingTemplate}
+						onClose={() => {
+							setShowTemplateForm(false);
+							setEditingTemplate(null);
+						}}
+						onSuccess={handleTemplateFormSuccess}
 					/>
 				)}
 			</div>

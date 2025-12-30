@@ -10,32 +10,35 @@ interface PricingConfigHeaderProps {
 export function PricingConfigHeader({ agentService, theme, onClose }: PricingConfigHeaderProps) {
   return (
     <div
-      className={`flex justify-between items-center p-3 border-b ${
-        theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'
-      } rounded-t-xl`}
+      className={`flex justify-between items-center px-6 py-4 border-b ${
+        theme === 'dark' ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'
+      }`}
     >
-      <div>
+      <div className="flex items-center gap-4">
         <h2
-          className={`text-xl font-bold ${
-            theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
+          className={`text-xl font-black tracking-tight ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}
         >
           {agentService.serviceTemplate?.name || 'Configure Service'}
         </h2>
-        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-          Step-by-step pricing configuration
-        </p>
+        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${
+          theme === 'dark' ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'
+        }`}>
+          Editing
+        </span>
       </div>
 
       <button
         onClick={onClose}
-        className={`p-2 rounded-lg border transition-colors ${
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 ${
           theme === 'dark'
-            ? 'border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-            : 'border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+            ? 'border-gray-800 text-gray-400 hover:bg-gray-800 hover:text-white'
+            : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900'
         }`}
       >
-        <X size={20} />
+        <X size={14} />
+        <span>Exit</span>
       </button>
     </div>
   );

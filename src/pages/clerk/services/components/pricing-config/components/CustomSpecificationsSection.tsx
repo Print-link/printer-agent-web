@@ -26,68 +26,50 @@ export function CustomSpecificationsSection({
   return (
     <section>
       <div className="flex justify-between items-center mb-4">
-        <h3
-          className={`text-lg font-semibold ${
-            theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
-          }`}
-        >
-          Step 3: Custom Specifications
+        <h3 className={`text-sm font-black uppercase tracking-widest ${
+          theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+        }`}>
+          Specific Details
         </h3>
         <button
           type="button"
           onClick={onAdd}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 ${
             theme === 'dark'
-              ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20'
+              : 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20'
           }`}
         >
-          <Plus size={16} />
-          Add Custom Specification
+          <Plus size={14} />
+          <span>Add Detail</span>
         </button>
       </div>
-      <p
-        className={`text-sm mb-4 ${
-          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-        }`}
-      >
-        Add optional extras that customers can select
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div className="space-y-2">
         {customSpecifications.map((spec, index) => (
-          <div
+          <CustomSpecCard
             key={spec.id}
-            className={`p-4 rounded-lg border ${
-              theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
-            }`}
-          >
-            <CustomSpecCard
-              spec={spec}
-              index={index}
-              isEditing={editingIndex === index}
-              theme={theme}
-              onEdit={() => onEdit(index)}
-              onSave={(updates) => onUpdate(index, updates)}
-              onCancel={onCancelEdit}
-              onDelete={() => {
-                if (window.confirm('Are you sure you want to remove this custom specification?')) {
-                  onDelete(index);
-                }
-              }}
-            />
-          </div>
+            spec={spec}
+            index={index}
+            isEditing={editingIndex === index}
+            theme={theme}
+            onEdit={() => onEdit(index)}
+            onSave={(updates) => onUpdate(index, updates)}
+            onCancel={onCancelEdit}
+            onDelete={() => {
+              if (window.confirm('Are you sure you want to remove this custom specification?')) {
+                onDelete(index);
+              }
+            }}
+          />
         ))}
+
         {customSpecifications.length === 0 && (
-          <p
-            className={`text-sm text-center py-8 col-span-2 ${
-              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-            }`}
-          >
-            No custom specifications. Click "Add Custom Specification" to create one.
+          <p className={`text-xs text-center py-6 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+            No custom specs defined.
           </p>
         )}
       </div>
     </section>
   );
 }
-

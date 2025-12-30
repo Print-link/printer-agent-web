@@ -319,10 +319,33 @@ export interface ServiceTemplate {
   supportsFrontBack: boolean;
   supportsColor: boolean;
   supportsPrintCut: boolean;
-  pricingFormulaId?: string;
+  pricingFormulaId: string;
+  branchId?: string;
   description?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+}
+
+export interface CreateServiceTemplateData {
+  subCategoryId: string;
+  name: string;
+  measurementUnit: 'FEET' | 'INCH' | 'UNIT';
+  allowsCustomSize?: boolean;
+  supportsFrontBack?: boolean;
+  supportsColor?: boolean;
+  supportsPrintCut?: boolean;
+  pricingFormulaId: string;
+  branchId?: string;
+}
+
+export interface UpdateServiceTemplateData {
+  name?: string;
+  measurementUnit?: 'FEET' | 'INCH' | 'UNIT';
+  allowsCustomSize?: boolean;
+  supportsFrontBack?: boolean;
+  supportsColor?: boolean;
+  supportsPrintCut?: boolean;
+  pricingFormulaId?: string;
 }
 
 // Flexible Pricing Configuration Types

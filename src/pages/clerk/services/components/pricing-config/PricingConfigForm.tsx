@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Layers, ListChecks, Settings, Eye } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useTheme } from '../../../../../contexts/ThemeContext';
 import { usePricingConfig } from './hooks/usePricingConfig';
 import { usePricingConfigForm } from './hooks/usePricingConfigForm';
 import { PricingConfigHeader } from './components/PricingConfigHeader';
-import { PricingConfigSidebar } from './components/PricingConfigSidebar';
 import { BaseConfigurationsSection } from './components/BaseConfigurationsSection';
 import { OptionsSection } from './components/OptionsSection';
 import { CustomSpecificationsSection } from './components/CustomSpecificationsSection';
@@ -20,33 +19,6 @@ interface PricingConfigFormProps {
   onSuccess: () => void;
 }
 
-const STEPS = [
-  {
-    id: 1,
-    title: 'Base Configuration',
-    description: 'Setup pricing models',
-    icon: Layers,
-  },
-  {
-    id: 2,
-    title: 'Options & Extras',
-    description: 'Add finishing options',
-    icon: ListChecks,
-  },
-  {
-    id: 3,
-    title: 'Custom Specifications',
-    description: 'Define user inputs',
-    icon: Settings,
-  },
-  {
-    id: 4,
-    title: 'Review & Activate',
-    description: 'Preview and save',
-    icon: Eye,
-  },
-];
-
 export function PricingConfigForm({
   isOpen,
   agentService,
@@ -54,7 +26,10 @@ export function PricingConfigForm({
   onSuccess,
 }: PricingConfigFormProps) {
   const { theme } = useTheme();
-  const [currentStep, setCurrentStep] = useState(1);
+  
+  // Section expansion states
+  const [isOptionsExpanded, setIsOptionsExpanded] = useState(false);
+  const [isCustomSpecsExpanded, setIsCustomSpecsExpanded] = useState(false);
   
   // Dialog states
   const [showAddBaseConfig, setShowAddBaseConfig] = useState(false);
@@ -82,18 +57,6 @@ export function PricingConfigForm({
 
   if (!isOpen) return null;
 
-  const handleNext = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
-    }
-  };
-
   const handleToggleBaseConfig = (index: number, checked: boolean) => {
     const newChecked = new Set(checkedBaseConfigs);
     if (checked) {
@@ -118,49 +81,51 @@ export function PricingConfigForm({
     setEditingCustomSpec(null);
   };
 
+  const SectionHeader = ({ title, isExpanded, onToggle, count, description }: { title: string, isExpanded: boolean, onToggle: () => void, count?: number, description?: string }) => (
+    <button
+      onClick={onToggle}
+      className={`w-full flex items-center justify-between py-4 border-b ${
+        theme === 'dark' ? 'border-gray-800 text-gray-400 hover:text-gray-300' : 'border-gray-100 text-gray-500 hover:text-gray-700'
+      } transition-colors group`}
+    >
+      <div className="flex items-center gap-3">
+        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        <span className="text-[10px] font-black uppercase tracking-widest">{title}</span>
+        {count !== undefined && count > 0 && (
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+            theme === 'dark' ? 'bg-gray-800 text-gray-500' : 'bg-gray-100 text-gray-400'
+          }`}>
+            {count}
+          </span>
+        )}
+        <span className="text-[12px] text-gray-500" title={description}>{description}</span>
+      </div>
+    </button>
+  );
+
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-5"
-        onClick={onClose}
+        className={`fixed inset-0 z-50 flex flex-col transition-all duration-300 animate-in fade-in zoom-in-95 ${
+          theme === 'dark' ? 'bg-gray-900 font-sans' : 'bg-gray-50 font-sans'
+        }`}
       >
-        <div
-          className={`flex flex-col rounded-lg max-w-5xl w-full h-[85vh] shadow-2xl overflow-hidden ${
-            theme === 'dark' ? 'bg-gray-800 ring-1 ring-gray-700' : 'bg-white ring-1 ring-gray-200'
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="flex flex-col h-full max-w-[1400px] mx-auto w-full">
           <PricingConfigHeader agentService={agentService} theme={theme} onClose={onClose} />
 
           <div className="flex flex-1 overflow-hidden">
-            <PricingConfigSidebar
-              currentStep={currentStep}
-              steps={STEPS}
-              theme={theme}
-              onStepClick={setCurrentStep}
-            />
-
-            <div className={`flex-1 overflow-y-auto p-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+            <main className="flex-1 overflow-y-auto px-6 py-8">
               <div className="max-w-3xl mx-auto">
-                <div className="mb-6">
-
-                  <h3 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                    {STEPS[currentStep - 1].title}
-                  </h3>
-                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {STEPS[currentStep - 1].description}
-                  </p>
-                </div>
-
                 {error && (
-                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/50 text-red-500 text-sm mb-6 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    {error}
+                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/50 text-red-500 text-xs mb-6 flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+                    <span className="font-bold">{error}</span>
                   </div>
                 )}
 
-                <div className="space-y-6">
-                  {currentStep === 1 && (
+                <div className="space-y-8 pb-20">
+                  {/* Base Pricing Section - Always Expanded */}
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-500">
                     <BaseConfigurationsSection
                       baseConfigurations={pricingConfig.baseConfigurations || []}
                       checkedIndices={checkedBaseConfigs}
@@ -170,55 +135,84 @@ export function PricingConfigForm({
                       onUpdate={handleUpdateBaseConfig}
                       onDelete={removeBaseConfiguration}
                     />
-                  )}
+                  </div>
 
-                  {currentStep === 2 && (
-                    <OptionsSection
-                      options={pricingConfig.options || []}
-                      editingIndex={editingOption}
-                      theme={theme}
-                      onAdd={() => setShowAddOption(true)}
-                      onEdit={setEditingOption}
-                      onUpdate={handleUpdateOption}
-                      onCancelEdit={() => setEditingOption(null)}
-                      onDelete={removeOption}
+                  {/* Standard Options Section */}
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-500 delay-150">
+                    <SectionHeader 
+                      title="Standard Options" 
+                      description="Configure standard options with price modifiers i.e. paper size, paper type, paper color, etc."
+                      isExpanded={isOptionsExpanded} 
+                      onToggle={() => setIsOptionsExpanded(!isOptionsExpanded)}
+                      count={pricingConfig.options?.length}
                     />
-                  )}
+                    {isOptionsExpanded && (
+                      <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                        <OptionsSection
+                          options={pricingConfig.options || []}
+                          editingIndex={editingOption}
+                          theme={theme}
+                          onAdd={() => setShowAddOption(true)}
+                          onEdit={setEditingOption}
+                          onUpdate={handleUpdateOption}
+                          onCancelEdit={() => setEditingOption(null)}
+                          onDelete={removeOption}
+                        />
+                      </div>
+                    )}
+                  </div>
 
-                  {currentStep === 3 && (
-                    <CustomSpecificationsSection
-                      customSpecifications={pricingConfig.customSpecifications || []}
-                      editingIndex={editingCustomSpec}
-                      theme={theme}
-                      onAdd={() => setShowAddCustomSpec(true)}
-                      onEdit={setEditingCustomSpec}
-                      onUpdate={handleUpdateCustomSpec}
-                      onCancelEdit={() => setEditingCustomSpec(null)}
-                      onDelete={removeCustomSpecification}
+                  {/* Specifics Section */}
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-500 delay-300">
+                    <SectionHeader 
+                      title="Custom Specifications" 
+                      description="Configure extra Add-on with price modifiers i.e. Brown envelope, Lamination, etc."
+                      isExpanded={isCustomSpecsExpanded} 
+                      onToggle={() => setIsCustomSpecsExpanded(!isCustomSpecsExpanded)}
+                      count={pricingConfig.customSpecifications?.length}
                     />
-                  )}
-
-                  {currentStep === 4 && (
-                    <ConfigurationPreview
-                      pricingConfig={pricingConfig}
-                      showPreview={true}
-                      theme={theme}
-                      onToggle={() => {}}
-                    />
-                  )}
+                    {isCustomSpecsExpanded && (
+                      <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                        <CustomSpecificationsSection
+                          customSpecifications={pricingConfig.customSpecifications || []}
+                          editingIndex={editingCustomSpec}
+                          theme={theme}
+                          onAdd={() => setShowAddCustomSpec(true)}
+                          onEdit={setEditingCustomSpec}
+                          onUpdate={handleUpdateCustomSpec}
+                          onCancelEdit={() => setEditingCustomSpec(null)}
+                          onDelete={removeCustomSpecification}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            </main>
+
+            {/* Live Summary Sidebar */}
+            <aside className={`w-80 flex-shrink-0 border-l px-6 py-8 hidden xl:block ${theme === 'dark' ? 'border-gray-800 bg-gray-900/40' : 'border-gray-200 bg-white'}`}>
+              <div className="sticky top-0">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className={`w-1 h-1 rounded-full bg-blue-500 animate-pulse`} />
+                  <h4 className={`text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    Live Summary
+                  </h4>
+                </div>
+                <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-gray-800/20 border-gray-700' : 'bg-white border-gray-100'}`}>
+                  <ConfigurationPreview
+                    pricingConfig={pricingConfig}
+                    theme={theme}
+                  />
+                </div>
+              </div>
+            </aside>
           </div>
 
           <PricingConfigActions
             theme={theme}
             isSubmitting={isSubmitting}
-            currentStep={currentStep}
-            totalSteps={STEPS.length}
             onClose={onClose}
-            onNext={handleNext}
-            onBack={handleBack}
             onSaveDraft={() => handleSave(pricingConfig, false)}
             onSaveAndActivate={() => handleSave(pricingConfig, true)}
           />
@@ -247,4 +241,3 @@ export function PricingConfigForm({
     </>
   );
 }
-

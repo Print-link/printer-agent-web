@@ -20,12 +20,12 @@ export function PricingConfigSidebar({
 }: PricingConfigSidebarProps) {
   return (
     <div
-      className={`w-64 flex-shrink-0 border-r p-4 ${
-        theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50/50'
+      className={`h-full flex flex-col p-4 ${
+        theme === 'dark' ? 'bg-gray-900' : 'bg-white'
       }`}
     >
-      <div className="space-y-6">
-        {steps.map((step, index) => {
+      <div className="space-y-4">
+        {steps.map((step) => {
           const isActive = currentStep === step.id;
           const isCompleted = currentStep > step.id;
           const Icon = step.icon;
@@ -33,68 +33,42 @@ export function PricingConfigSidebar({
           return (
             <div
               key={step.id}
-              onClick={() => isCompleted && onStepClick(step.id)}
-              className={`relative flex items-start gap-3 transition-colors ${
-                isCompleted ? 'cursor-pointer' : 'cursor-default'
-              }`}
+              onClick={() => (isCompleted || isActive) && onStepClick(step.id)}
+              className={`relative flex items-center gap-3 p-2 rounded-xl transition-all duration-200 group ${
+                isActive 
+                  ? theme === 'dark' ? 'bg-blue-500/10' : 'bg-blue-50'
+                  : 'hover:bg-gray-800/30'
+              } ${isCompleted || isActive ? 'cursor-pointer' : 'cursor-default'}`}
             >
-              {/* Connector Line */}
-              {index !== steps.length - 1 && (
-                <div
-                  className={`absolute left-4 top-8 bottom-[-24px] w-0.5 ${
-                    isCompleted
-                      ? 'bg-blue-500'
-                      : theme === 'dark'
-                      ? 'bg-gray-700'
-                      : 'bg-gray-200'
-                  }`}
-                />
-              )}
-
               <div
-                className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${
+                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300 ${
                   isActive
-                    ? 'border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-blue-500 text-white'
                     : isCompleted
-                    ? 'border-blue-500 bg-blue-500 text-white'
+                    ? 'text-blue-500'
                     : theme === 'dark'
-                    ? 'border-gray-600 bg-gray-800 text-gray-500'
-                    : 'border-gray-300 bg-white text-gray-400'
+                    ? 'text-gray-600'
+                    : 'text-gray-400'
                 }`}
               >
                 {isCompleted ? <CheckCircle2 size={16} /> : <Icon size={16} />}
               </div>
 
-              <div className="pt-1">
-                <p
-                  className={`text-sm font-semibold leading-none mb-1 ${
-                    isActive
-                      ? theme === 'dark'
-                        ? 'text-white'
-                        : 'text-gray-900'
-                      : isCompleted
-                      ? theme === 'dark'
-                        ? 'text-gray-200'
-                        : 'text-gray-700'
-                      : theme === 'dark'
-                      ? 'text-gray-500'
-                      : 'text-gray-400'
-                  }`}
-                >
-                  {step.title}
-                </p>
-                <p
-                  className={`text-xs ${
-                    isActive
-                      ? 'text-blue-500'
-                      : theme === 'dark'
-                      ? 'text-gray-600'
-                      : 'text-gray-500'
-                  }`}
-                >
-                  {step.description}
-                </p>
-              </div>
+              <span
+                className={`text-xs font-bold tracking-wide transition-colors ${
+                  isActive
+                    ? theme === 'dark' ? 'text-white' : 'text-blue-600'
+                    : isCompleted
+                    ? theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                    : theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+                }`}
+              >
+                {step.title}
+              </span>
+
+              {isActive && (
+                <div className="absolute right-2 w-1 h-4 bg-blue-500 rounded-full" />
+              )}
             </div>
           );
         })}
