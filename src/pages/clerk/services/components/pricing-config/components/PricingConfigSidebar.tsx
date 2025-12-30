@@ -1,4 +1,4 @@
-import { Layers, ListChecks, Settings, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface PricingConfigSidebarProps {
   currentStep: number;
